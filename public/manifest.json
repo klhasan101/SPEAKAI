@@ -1,0 +1,23 @@
+{
+  "name": "ShadowSpeak AI",
+  "short_name": "ShadowSpeak",
+  "description": "Master American English speech mechanics with real-time Gemini 3.5 audio evaluation.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#0071e3",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
