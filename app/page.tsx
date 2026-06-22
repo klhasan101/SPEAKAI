@@ -266,7 +266,7 @@ export default function HomeDashboard() {
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border px-4 pt-3 pb-safe flex flex-col">
+      <div className="flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border px-4 pt-3 pb-safe-lg flex flex-col">
         <Link href="/practice">
           <button className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
             <Play className="w-4 h-4 fill-current" />

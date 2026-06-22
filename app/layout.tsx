@@ -39,11 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full bg-neutral-950 flex flex-col items-center justify-start">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-[100dvh] overflow-hidden antialiased`} suppressHydrationWarning>
+      <body className="h-[100dvh] w-full bg-neutral-950 flex flex-col items-center justify-center overflow-hidden">
         <Providers>
           {/* Strict Layout Boundary: Mobile Container Wrapper */}
-          <div className="w-full max-w-md h-[100dvh] bg-background border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
+          <div className="w-full max-w-md h-full bg-background border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
             <main className="flex-1 flex flex-col min-h-0 relative overflow-hidden">
               {children}
             </main>
