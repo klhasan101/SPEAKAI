@@ -636,7 +636,7 @@ export default function PracticeEnvironment() {
 
     if (appState === 'FEEDBACK_READY' && evaluation && evaluation.words) {
       return (
-        <div dir="ltr" className="flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-full px-4 select-none">
+        <div dir="ltr" className="flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-full px-4 select-none [word-break:break-word]">
           {evaluation.words.map((w, index) => {
             let colorClass = 'text-foreground';
             if (w.status === 'correct') {
@@ -660,7 +660,7 @@ export default function PracticeEnvironment() {
     }
 
     return (
-      <span dir="ltr" className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-snug select-none block">
+      <span dir="ltr" className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-snug select-none block [word-break:break-word]">
         {currentSentence.text}
       </span>
     );

@@ -589,7 +589,7 @@ function ResultContent() {
                         }`}>
                           {att.score}
                         </span>
-                        <p dir="ltr" className="text-xs font-medium text-foreground truncate max-w-[180px] md:max-w-[220px]">
+                        <p dir="ltr" className="text-xs font-medium text-foreground truncate max-w-[50vw] md:max-w-[220px]">
                           {att.sentenceText}
                         </p>
                       </div>
