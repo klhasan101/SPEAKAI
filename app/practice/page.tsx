@@ -320,6 +320,10 @@ export default function PracticeEnvironment() {
       if (customKey) {
         headers['x-gemini-api-key'] = customKey;
       }
+      const customModel = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_gemini_model') : null;
+      if (customModel) {
+        headers['x-gemini-model'] = customModel;
+      }
 
       const res = await fetch('/api/evaluate', {
         method: 'POST',
@@ -438,6 +442,10 @@ export default function PracticeEnvironment() {
         const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
         if (customKey) {
           headers['x-gemini-api-key'] = customKey;
+        }
+        const customModel = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_gemini_model') : null;
+        if (customModel) {
+          headers['x-gemini-model'] = customModel;
         }
 
         const res = await fetch('/api/generate-content', {

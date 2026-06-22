@@ -21,6 +21,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customKey, setCustomKey] = useState('');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'cleared'>('idle');
 
   // Avoid hydration mismatch by waiting for mount
@@ -28,17 +29,19 @@ export default function Header({ showBackButton = false, backHref, title }: Head
     setMounted(true);
     const saved = localStorage.getItem('shadowspeak_custom_api_key') || '';
     setCustomKey(saved);
+    const savedModel = localStorage.getItem('shadowspeak_gemini_model') || 'gemini-3.5-flash';
+    setSelectedModel(savedModel);
   }, []);
 
   const handleSaveSettings = () => {
     if (typeof window !== 'undefined') {
       if (customKey.trim()) {
         localStorage.setItem('shadowspeak_custom_api_key', customKey.trim());
-        setSaveStatus('saved');
       } else {
         localStorage.removeItem('shadowspeak_custom_api_key');
-        setSaveStatus('cleared');
       }
+      localStorage.setItem('shadowspeak_gemini_model', selectedModel);
+      setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2500);
     }
   };
@@ -46,7 +49,9 @@ export default function Header({ showBackButton = false, backHref, title }: Head
   const handleClearSettings = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('shadowspeak_custom_api_key');
+      localStorage.removeItem('shadowspeak_gemini_model');
       setCustomKey('');
+      setSelectedModel('gemini-3.5-flash');
       setSaveStatus('cleared');
       setTimeout(() => setSaveStatus('idle'), 2500);
     }
@@ -88,32 +93,10 @@ export default function Header({ showBackButton = false, backHref, title }: Head
         <div className="flex items-center gap-2">
           {mounted && (
             <>
-              {/* Language Switch Toggle */}
-              <button
-                onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-                className="px-2.5 py-1.5 rounded-xl border border-border bg-card text-foreground hover:bg-muted font-bold text-xs transition-all duration-200 shadow-sm"
-                aria-label="Switch Language"
-              >
-                {lang === 'en' ? 'العربية' : 'English'}
-              </button>
-
-              {/* Dark/Light Toggle */}
-              <button
-                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all duration-200 shadow-sm"
-                aria-label="Toggle dark/light theme"
-              >
-                {resolvedTheme === 'dark' ? (
-                  <Sun className="w-4 h-4 text-amber-500 animate-pulse" />
-                ) : (
-                  <Moon className="w-4 h-4 text-indigo-600" />
-                )}
-              </button>
-
               {/* Settings Toggle */}
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all duration-200 shadow-sm"
+                className="p-2 rounded-xl border border-border bg-card text-foreground hover:bg-muted transition-all duration-200 shadow-sm animate-none"
                 aria-label="Settings"
               >
                 <Settings className="w-4 h-4 text-muted-foreground hover:text-foreground" />
@@ -145,6 +128,90 @@ export default function Header({ showBackButton = false, backHref, title }: Head
             </div>
 
             <div className="space-y-4 py-2">
+              {/* Language Selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground block">
+                  {t('selectLanguage')}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setLang('en')}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                      lang === 'en'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLang('ar')}
+                    className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold border transition-all duration-200 ${
+                      lang === 'ar'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    العربية
+                  </button>
+                </div>
+              </div>
+
+              {/* Theme Selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground block">
+                  {t('selectTheme')}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTheme('light')}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold border transition-all duration-200 flex items-center justify-center gap-2 ${
+                      resolvedTheme === 'light'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <Sun className="w-3.5 h-3.5" />
+                    {t('themeLight')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTheme('dark')}
+                    className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold border transition-all duration-200 flex items-center justify-center gap-2 ${
+                      resolvedTheme === 'dark'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-background border-border text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <Moon className="w-3.5 h-3.5" />
+                    {t('themeDark')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Model Selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground block">
+                  {t('selectModel')}
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background text-foreground text-xs outline-none focus:border-primary transition-all font-semibold"
+                >
+                  <option value="gemini-3.5-flash">
+                    gemini-3.5-flash ({t('modelRecommended')})
+                  </option>
+                  <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                  <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                  <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                </select>
+              </div>
+
+              {/* API Key */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <Key className="w-3.5 h-3.5 text-primary" />

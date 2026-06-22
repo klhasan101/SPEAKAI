@@ -40,10 +40,13 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
   ]
 }`;
 
+    const customModel = req.headers.get('x-gemini-model') || '';
+    const selectedModel = customModel.trim() || 'gemini-3.5-flash';
+
     // Request Gemini to generate contents with retry capability
     const response = await withRetry(() =>
       ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: selectedModel,
         contents: `Generate ${count} custom practice ${sessionMode === 'paragraph' ? 'paragraphs' : 'sentences'}.`,
         config: {
           systemInstruction,

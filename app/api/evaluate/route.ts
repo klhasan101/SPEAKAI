@@ -58,7 +58,9 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
   ]
 }`;
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+    const customModel = req.headers.get('x-gemini-model') || '';
+    const selectedModel = customModel.trim() || 'gemini-3.5-flash';
+    const modelsToTry = [selectedModel, 'gemini-2.5-flash', 'gemini-1.5-flash'];
     let lastError: any = null;
     let evalText = '';
 

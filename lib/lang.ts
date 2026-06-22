@@ -100,7 +100,13 @@ export const translations = {
     saveBtn: "Save Settings",
     clearBtn: "Clear Custom Key",
     settingsSaved: "API Key saved successfully!",
-    settingsCleared: "Custom API Key cleared."
+    settingsCleared: "Custom API Key cleared.",
+    selectLanguage: "Language",
+    selectTheme: "Color Theme",
+    themeLight: "Light Mode",
+    themeDark: "Dark Mode",
+    selectModel: "Gemini Model",
+    modelRecommended: "Recommended"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -201,6 +207,12 @@ export const translations = {
     saveBtn: "حفظ الإعدادات",
     clearBtn: "مسح المفتاح الخاص",
     settingsSaved: "تم حفظ مفتاح API بنجاح!",
-    settingsCleared: "تم مسح مفتاح API الخاص بك."
+    settingsCleared: "تم مسح مفتاح API الخاص بك.",
+    selectLanguage: "لغة التطبيق",
+    selectTheme: "مظهر الألوان",
+    themeLight: "فاتح",
+    themeDark: "داكن",
+    selectModel: "نموذج Gemini",
+    modelRecommended: "موصى به"
   }
 };

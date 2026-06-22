@@ -713,14 +713,21 @@ function ResultContent() {
   );
 }
 
+function ResultFallback() {
+  const { lang } = useLanguage();
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-background">
+      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <span className="text-sm text-muted-foreground">
+        {lang === 'ar' ? 'جاري إنشاء ملخص النتائج...' : 'Generating results summary...'}
+      </span>
+    </div>
+  );
+}
+
 export default function SessionCompletionMetrics() {
   return (
-    <Suspense fallback={
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-background">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span className="text-sm text-muted-foreground">Generating results summary...</span>
-      </div>
-    }>
+    <Suspense fallback={<ResultFallback />}>
       <ResultContent />
     </Suspense>
   );
