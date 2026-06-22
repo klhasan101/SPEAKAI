@@ -106,7 +106,14 @@ export const translations = {
     themeLight: "Light Mode",
     themeDark: "Dark Mode",
     selectModel: "Gemini Model",
-    modelRecommended: "Recommended"
+    modelRecommended: "Recommended",
+    // Offline Mode
+    offlineBadge: "Offline Mode",
+    offlineNotice: "No internet connection. Using local speech recognition for a simplified evaluation.",
+    offlineAnalyzing: "Analysing locally...",
+    offlineResultLabel: "Local Analysis",
+    offlineResultNote: "This is a simplified offline evaluation based on speech recognition. Connect to the internet for full Gemini AI scoring.",
+    onlineBadge: "Online"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -213,6 +220,13 @@ export const translations = {
     themeLight: "فاتح",
     themeDark: "داكن",
     selectModel: "نموذج Gemini",
-    modelRecommended: "موصى به"
+    modelRecommended: "موصى به",
+    // Offline Mode
+    offlineBadge: "وضع بلا إنترنت",
+    offlineNotice: "لا يوجد اتصال بالإنترنت. يتم استخدام التعرف على الكلام المحلي للحصول على تقييم مبسّط.",
+    offlineAnalyzing: "جاري التحليل محلياً...",
+    offlineResultLabel: "تحليل محلي",
+    offlineResultNote: "هذا تقييم مبسّط بلا إنترنت يعتمد على التعرف على الكلام. اتصل بالإنترنت للحصول على درجة Gemini AI الكاملة.",
+    onlineBadge: "متصل"
   }
 };

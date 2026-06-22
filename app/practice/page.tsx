@@ -3,11 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Mic, Square, Loader2, Sparkles, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle } from 'lucide-react';
+import { Volume2, Mic, Square, Loader2, Sparkles, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle, WifiOff, Wifi } from 'lucide-react';
 import Header from '@/components/Header';
 import { AMERICAN_PHRASES, AMERICAN_PARAGRAPHS, Sentence } from '@/lib/sentences';
 import { db } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
+import {
+  evaluateLocally,
+  isSpeechRecognitionSupported,
+  startOfflineRecording,
+  type OfflineEvaluationResult,
+} from '@/lib/offline-evaluator';
 
 type AppState = 'IDLE' | 'PLAYING_PROMPT' | 'RECORDING' | 'ANALYZING' | 'FEEDBACK_READY';
 
@@ -53,6 +59,10 @@ export default function PracticeEnvironment() {
   // Timing state for session metrics
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
 
+  // Offline mode state
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [offlineController, setOfflineController] = useState<{ stop: () => void } | null>(null);
+
   // Refs for cleanup
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -63,6 +73,18 @@ export default function PracticeEnvironment() {
   useEffect(() => {
     return () => {
       cleanupAudio();
+    };
+  }, []);
+
+  // Online/offline detection
+  useEffect(() => {
+    const update = () => setIsOnline(navigator.onLine);
+    update();
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
     };
   }, []);
 
@@ -248,13 +270,58 @@ export default function PracticeEnvironment() {
     audio.play();
   };
 
-  // Start Recording
+  // Start Recording — routes to offline or online mode
   const startRecording = async () => {
     setErrorMsg(null);
     setUserAudioBlob(null);
     setRecordingDuration(0);
     cleanupAudio();
 
+    if (!isOnline) {
+      // ── OFFLINE RECORDING via SpeechRecognition + MediaRecorder ──
+      if (!isSpeechRecognitionSupported()) {
+        setErrorMsg(t('micDenied'));
+        return;
+      }
+      setAppState('RECORDING');
+      const ctrl = startOfflineRecording(
+        15,
+        (elapsed) => {
+          setRecordingDuration(elapsed);
+        },
+        async (blob, transcript) => {
+          setUserAudioBlob(blob);
+          setAppState('ANALYZING');
+          if (!currentSentence) return;
+          // Run local evaluation
+          const result: OfflineEvaluationResult = evaluateLocally(
+            currentSentence.text,
+            transcript,
+            lang as 'en' | 'ar'
+          );
+          setEvaluation(result);
+          // Save to IndexedDB (offline attempts still tracked)
+          await db.attempts.add({
+            sentenceId: currentSentence.id,
+            sentenceText: currentSentence.text,
+            score: result.score,
+            feedbackPositive: result.feedbackPositive,
+            feedbackImprovement: result.feedbackImprovement,
+            timestamp: Date.now(),
+            words: result.words,
+          });
+          setAppState('FEEDBACK_READY');
+        },
+        (errKey) => {
+          setErrorMsg(t(errKey as any));
+          setAppState('IDLE');
+        }
+      );
+      setOfflineController(ctrl);
+      return;
+    }
+
+    // ── ONLINE RECORDING via MediaRecorder ──
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -314,8 +381,13 @@ export default function PracticeEnvironment() {
     }
   };
 
-  // Stop Recording
+  // Stop Recording — handles both online and offline
   const stopRecording = () => {
+    if (!isOnline && offlineController) {
+      offlineController.stop();
+      setOfflineController(null);
+      return;
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -753,10 +825,35 @@ export default function PracticeEnvironment() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               {t('progress')}
             </span>
-            <span className="text-sm font-bold text-primary">
-              {t('sentenceOf', { x: currentIndex + 1, y: sentences.length })}
-            </span>
+            <div className="flex items-center gap-2">
+              {/* Connectivity badge */}
+              <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                isOnline
+                  ? 'bg-emerald-500/10 text-emerald-500'
+                  : 'bg-amber-500/10 text-amber-600'
+              }`}>
+                {isOnline
+                  ? <><Wifi className="w-3 h-3" />{t('onlineBadge')}</>
+                  : <><WifiOff className="w-3 h-3" />{t('offlineBadge')}</>}
+              </span>
+              <span className="text-sm font-bold text-primary">
+                {t('sentenceOf', { x: currentIndex + 1, y: sentences.length })}
+              </span>
+            </div>
           </div>
+
+          {/* Offline notice banner */}
+          {!isOnline && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2"
+            >
+              <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{t('offlineNotice')}</span>
+            </motion.div>
+          )}
 
           {/* Focal Prompt Card */}
           <div className="flex-1 flex flex-col items-center justify-center py-8">
@@ -812,7 +909,9 @@ export default function PracticeEnvironment() {
             <div className="w-full bg-card border border-border rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-pulse">
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                <span className="text-sm font-semibold text-foreground">{t('analyzingAcoustics')}</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {isOnline ? t('analyzingAcoustics') : t('offlineAnalyzing')}
+                </span>
               </div>
               <div className="space-y-2">
                 <div className="h-4 bg-muted rounded-full w-full animate-shimmer" />
@@ -942,8 +1041,16 @@ export default function PracticeEnvironment() {
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-foreground">{t('acousticScore')}</h3>
-                  <p className="text-xs text-muted-foreground">{t('accentAlignDetail')}</p>
+                  <h3 className="text-lg font-bold text-foreground">
+                    {(evaluation as any).isOffline
+                      ? t('offlineResultLabel')
+                      : t('acousticScore')}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {(evaluation as any).isOffline
+                      ? <span className="flex items-center justify-center gap-1"><WifiOff className="w-3 h-3" />{t('offlineBadge')}</span>
+                      : t('accentAlignDetail')}
+                  </p>
                 </div>
               </div>
 
@@ -968,6 +1075,12 @@ export default function PracticeEnvironment() {
 
               {/* Feedback Points */}
               <div className="flex flex-col gap-3">
+                {!!(evaluation as any).isOffline && (
+                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
+                    <WifiOff className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    <span>{t('offlineResultNote')}</span>
+                  </div>
+                )}
                 <div className="p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 flex gap-3 text-sm">
                   <span className="text-emerald-500 font-semibold select-none flex-shrink-0 mt-0.5">🟢</span>
                   <p className="text-foreground leading-relaxed">
