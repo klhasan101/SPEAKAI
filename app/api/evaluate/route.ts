@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
     // Initialize the Google Gen AI client
     const ai = new GoogleGenAI({ apiKey });
 
+    const uiLang = req.headers.get('x-ui-language') || 'en';
+
     const systemInstruction = `You are an elite, highly specialized General American English phonetics professor and pronunciation coach. Your core mandate is to listen directly to the provided user audio stream and evaluate its execution performance against the following exact target reference text string: "${targetSentence}".
 
 Evaluate the input on three strict metrics:
@@ -43,6 +45,9 @@ Evaluate the input on three strict metrics:
 3. Structural accuracy (dropped letters, insertions, skipped words).
 
 You must think natively in standard American English (General American accent parameters).
+
+Language of Output Feedback:
+You MUST output the "feedbackPositive" and "feedbackImprovement" strings in the following language: ${uiLang === 'ar' ? 'Arabic (العربية)' : 'English (English)'}.
 
 Response Format:
 You MUST output a single, well-formed JSON object. Do not wrap the JSON output in markdown tags (do not use \`\`\`json ... \`\`\`). Your response must conform precisely to this structural schema:

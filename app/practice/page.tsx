@@ -354,6 +354,7 @@ export default function PracticeEnvironment() {
       if (customModel) {
         headers['x-gemini-model'] = customModel;
       }
+      headers['x-ui-language'] = lang;
 
       const res = await fetch('/api/evaluate', {
         method: 'POST',
@@ -894,7 +895,7 @@ export default function PracticeEnvironment() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black z-40"
+              className="fixed inset-0 bg-black z-40"
               onClick={handleNext}
             />
             
@@ -904,7 +905,7 @@ export default function PracticeEnvironment() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="absolute bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[32px] p-6 z-50 flex flex-col gap-6 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[32px] p-6 z-50 flex flex-col gap-5 shadow-2xl max-h-[85vh] overflow-y-auto"
             >
               {/* Top notch indicator */}
               <div className="w-12 h-1 bg-border rounded-full mx-auto" />
