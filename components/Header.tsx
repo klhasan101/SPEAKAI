@@ -22,25 +22,41 @@ export default function Header({ showBackButton = false, backHref, title }: Head
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [customKey, setCustomKey] = useState('');
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
+  const [initialKey, setInitialKey] = useState('');
+  const [initialModel, setInitialModel] = useState('gemini-3.5-flash');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'cleared'>('idle');
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('shadowspeak_custom_api_key') || '';
-    setCustomKey(saved);
-    const savedModel = localStorage.getItem('shadowspeak_gemini_model') || 'gemini-3.5-flash';
-    setSelectedModel(savedModel);
   }, []);
+
+  // Sync settings whenever the modal is opened
+  useEffect(() => {
+    if (isSettingsOpen && typeof window !== 'undefined') {
+      const saved = localStorage.getItem('shadowspeak_custom_api_key') || '';
+      setCustomKey(saved);
+      setInitialKey(saved);
+      const savedModel = localStorage.getItem('shadowspeak_gemini_model') || 'gemini-3.5-flash';
+      setSelectedModel(savedModel);
+      setInitialModel(savedModel);
+    }
+  }, [isSettingsOpen]);
 
   const handleSaveSettings = () => {
     if (typeof window !== 'undefined') {
-      if (customKey.trim()) {
-        localStorage.setItem('shadowspeak_custom_api_key', customKey.trim());
+      const trimmedKey = customKey.trim();
+      if (trimmedKey) {
+        localStorage.setItem('shadowspeak_custom_api_key', trimmedKey);
+        setInitialKey(trimmedKey);
+        setCustomKey(trimmedKey);
       } else {
         localStorage.removeItem('shadowspeak_custom_api_key');
+        setInitialKey('');
+        setCustomKey('');
       }
       localStorage.setItem('shadowspeak_gemini_model', selectedModel);
+      setInitialModel(selectedModel);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2500);
     }
@@ -49,9 +65,8 @@ export default function Header({ showBackButton = false, backHref, title }: Head
   const handleClearSettings = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('shadowspeak_custom_api_key');
-      localStorage.removeItem('shadowspeak_gemini_model');
       setCustomKey('');
-      setSelectedModel('gemini-3.5-flash');
+      setInitialKey('');
       setSaveStatus('cleared');
       setTimeout(() => setSaveStatus('idle'), 2500);
     }
@@ -64,6 +79,9 @@ export default function Header({ showBackButton = false, backHref, title }: Head
       router.back();
     }
   };
+
+  const hasChanges = customKey.trim() !== initialKey || selectedModel !== initialModel;
+  const isClearDisabled = !customKey && !initialKey;
 
   // Determine back label and header title based on current language
   const backLabel = t('goBack');
@@ -245,14 +263,16 @@ export default function Header({ showBackButton = false, backHref, title }: Head
               <button
                 type="button"
                 onClick={handleClearSettings}
-                className="flex-1 py-3 text-xs font-semibold rounded-2xl border border-border hover:bg-muted text-foreground active:scale-[0.98] transition-all"
+                disabled={isClearDisabled}
+                className="flex-1 py-3 text-xs font-semibold rounded-2xl border border-border hover:bg-muted text-foreground active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('clearBtn')}
               </button>
               <button
                 type="button"
                 onClick={handleSaveSettings}
-                className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
+                disabled={!hasChanges}
+                className="flex-1 py-3 bg-sonic-magenta text-white font-bold rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('saveBtn')}
               </button>
