@@ -71,7 +71,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
 
   return (
     <>
-      <header className="w-full bg-background/80 backdrop-blur-md border-b border-border px-4 pt-[max(0.625rem,env(safe-area-inset-top))] pb-2.5 flex items-center justify-between">
+      <header className="w-full bg-background/80 backdrop-blur-md border-b border-border px-4 pt-safe pb-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {showBackButton && (
             <button
@@ -109,7 +109,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
       {/* Settings Modal Dialog Overlay */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center sm:p-6 p-0" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-          <div className="bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 relative overflow-hidden max-h-[92dvh] sm:max-h-[85dvh] overflow-y-auto scrollbar-none pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <div className="bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col gap-4 relative overflow-hidden max-h-[92dvh] sm:max-h-[85dvh] overflow-y-auto scrollbar-none pb-safe-xl">
             <div className="flex justify-between items-center border-b border-border pb-3">
               <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
                 <Settings className="w-4 h-4 text-primary" />

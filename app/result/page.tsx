@@ -627,7 +627,7 @@ function ResultContent() {
       </div>
 
       {/* Pinned Bottom Actions (Footer) */}
-      <div className="flex-shrink-0 bg-background border-t border-border px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex flex-col gap-2.5">
+      <div className="flex-shrink-0 bg-background border-t border-border px-4 pt-3 pb-safe flex flex-col gap-2.5">
         <button
           onClick={generateShareCard}
           disabled={isGeneratingCard}
@@ -670,7 +670,7 @@ function ResultContent() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-5 relative overflow-hidden max-h-[92dvh] overflow-y-auto scrollbar-none pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+              className="bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-5 relative overflow-hidden max-h-[92dvh] overflow-y-auto scrollbar-none pb-safe-xl"
             >
               <div className="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-amber-500/10 blur-xl pointer-events-none" />
               
