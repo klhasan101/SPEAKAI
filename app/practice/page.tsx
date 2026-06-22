@@ -821,7 +821,7 @@ export default function PracticeEnvironment() {
           </div>
 
           {/* Fixed bottom button */}
-          <div className="flex-shrink-0 bg-background border-t border-border px-4 py-3 flex flex-col">
+          <div className="flex-shrink-0 bg-background border-t border-border px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex flex-col">
             <button
               onClick={handleStartPractice}
               disabled={isGenerating}
@@ -953,7 +953,7 @@ export default function PracticeEnvironment() {
           )}
 
           {/* Control Hub (Sticky Bottom Area) */}
-          <div className="flex-shrink-0 w-full flex flex-col gap-3 pt-3 border-t border-border bg-background">
+          <div className="flex-shrink-0 w-full flex flex-col gap-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-background">
             {appState !== 'ANALYZING' && appState !== 'FEEDBACK_READY' && (
               <>
                 {/* Voice Speed Controls */}
@@ -1026,7 +1026,7 @@ export default function PracticeEnvironment() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-45"
+              className="fixed inset-0 bg-black z-40"
               onClick={handleNext}
             />
             
@@ -1036,7 +1036,7 @@ export default function PracticeEnvironment() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[28px] p-5 z-50 flex flex-col gap-4 shadow-2xl max-h-[82vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[28px] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-50 flex flex-col gap-4 shadow-2xl max-h-[82dvh] overflow-y-auto scrollbar-none"
             >
               {/* Top notch indicator */}
               <div className="w-10 h-1 bg-border rounded-full mx-auto" />

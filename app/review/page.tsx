@@ -160,7 +160,7 @@ export default function ReviewPage() {
 
       {/* Start Review CTA (Pinned Footer) */}
       {!loading && items.length > 0 && (
-        <div className="flex-shrink-0 bg-background border-t border-border px-4 py-3 flex flex-col">
+        <div className="flex-shrink-0 bg-background border-t border-border px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex flex-col">
           <Link href="/practice">
             <button className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md cursor-pointer text-sm">
               <BookOpen className="w-4 h-4" />
