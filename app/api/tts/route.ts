@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { withRetry } from '@/lib/retry';
 
 export const maxDuration = 30;
 
@@ -19,26 +20,29 @@ export async function GET(req: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // Request Gemini to speak the text in standard General American English
-    // Gemini 2.0/2.5 supports native audio modalities
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: `Speak the following target text aloud clearly and naturally with a standard General American accent. Speak ONLY the exact sentence, with no introductions or extra commentary. Target text: "${text}"`,
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {
-              voiceName: 'Puck' // Puck is a high-quality standard American voice
+    // Request Gemini to speak the text with retry capability
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: `Speak the following target text aloud clearly and naturally with a standard General American accent. Speak ONLY the exact sentence, with no introductions or extra commentary. Target text: "${text}"`,
+        config: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: 'Puck'
+              }
             }
           }
         }
-      }
-    });
+      })
+    );
 
     // Find the audio part in the response candidates
     const candidate = response.candidates?.[0];
-    const part = candidate?.content?.parts?.find(p => p.inlineData && p.inlineData.mimeType?.startsWith('audio/'));
+    const part = candidate?.content?.parts?.find(
+      (p) => p.inlineData && p.inlineData.mimeType?.startsWith('audio/')
+    );
 
     if (part && part.inlineData && part.inlineData.data) {
       const audioBase64 = part.inlineData.data;

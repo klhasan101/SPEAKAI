@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { withRetry } from '@/lib/retry';
 
-export const maxDuration = 60; // Allow enough time for audio analysis
+export const maxDuration = 60; // Allow enough time for audio analysis and retries
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,31 +57,33 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
   ]
 }`;
 
-    // Define the models to try in order of preference (P0 Fix: Use actual available Gemini models)
     const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
     let lastError: any = null;
     let evalText = '';
 
     for (const model of modelsToTry) {
       try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: [
-            {
-              inlineData: {
-                mimeType,
-                data: base64Audio
+        // Wrap model calls inside withRetry to gracefully handle 429 Quota Exceeded conditions
+        const response = await withRetry(() =>
+          ai.models.generateContent({
+            model,
+            contents: [
+              {
+                inlineData: {
+                  mimeType,
+                  data: base64Audio
+                }
+              },
+              {
+                text: `Evaluate my pronunciation against the target sentence: "${targetSentence}"`
               }
-            },
-            {
-              text: `Evaluate my pronunciation against the target sentence: "${targetSentence}"`
+            ],
+            config: {
+              systemInstruction,
+              responseMimeType: 'application/json'
             }
-          ],
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json'
-          }
-        });
+          })
+        );
 
         if (response?.text) {
           evalText = response.text;
@@ -97,7 +100,6 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
     }
 
     // Parse clean JSON output
-    // Clean up any markdown blocks if the model ignored instructions
     let cleanJson = evalText.trim();
     if (cleanJson.startsWith('```')) {
       cleanJson = cleanJson.replace(/^```json\s*/, '').replace(/```$/, '').trim();

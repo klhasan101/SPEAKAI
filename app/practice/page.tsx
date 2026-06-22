@@ -224,12 +224,22 @@ export default function PracticeEnvironment() {
       streamRef.current = stream;
 
       let recorder: MediaRecorder;
-      const options = { mimeType: 'audio/webm' };
+      // V2 Task 11: Set compressed bitrate (32kbps) to reduce token count and upload size
+      const options = { 
+        mimeType: 'audio/webm',
+        audioBitsPerSecond: 32000 // 32 kbps
+      };
       
       try {
         recorder = new MediaRecorder(stream, options);
       } catch {
-        recorder = new MediaRecorder(stream);
+        try {
+          // If webm is not supported (e.g. iOS), try setting only bitsPerSecond
+          recorder = new MediaRecorder(stream, { audioBitsPerSecond: 32000 });
+        } catch {
+          // Fallback to standard constructor
+          recorder = new MediaRecorder(stream);
+        }
       }
 
       mediaRecorderRef.current = recorder;

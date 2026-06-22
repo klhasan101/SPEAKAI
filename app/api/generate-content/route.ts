@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { withRetry } from '@/lib/retry';
 
 export const maxDuration = 30;
 
@@ -37,14 +38,17 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
   ]
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: `Generate ${count} custom practice sentences.`,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json'
-      }
-    });
+    // Request Gemini to generate contents with retry capability
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: `Generate ${count} custom practice sentences.`,
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json'
+        }
+      })
+    );
 
     if (response?.text) {
       let cleanJson = response.text.trim();
