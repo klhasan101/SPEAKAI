@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Play, Flame, Award, ChevronRight, BarChart2 } from 'lucide-react';
 import Header from '@/components/Header';
-import { checkStreakValidity, getStreak, Streak } from '@/lib/streak';
-import { db, Attempt } from '@/lib/db';
+import { checkStreakValidity, Streak } from '@/lib/streak';
+import { db } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface ChartDay {

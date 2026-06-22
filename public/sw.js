@@ -1,5 +1,5 @@
 // Self-destructing Service Worker to immediately clear active cache and loops
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 

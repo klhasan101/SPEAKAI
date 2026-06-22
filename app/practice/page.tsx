@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle } from 'lucide-react';
+import { Volume2, Mic, Square, Loader2, Sparkles, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import { AMERICAN_PHRASES, AMERICAN_PARAGRAPHS, Sentence } from '@/lib/sentences';
 import { db } from '@/lib/db';
@@ -38,8 +38,6 @@ export default function PracticeEnvironment() {
   const [appState, setAppState] = useState<AppState>('IDLE');
   
   // Audio state
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [recordingDuration, setRecordingDuration] = useState(0);
   
   // Voice playback speed state (default to 1.0x)
@@ -71,7 +69,7 @@ export default function PracticeEnvironment() {
   const currentSentence = sentences[currentIndex];
 
   // Clean up audio streams and recorders
-  const cleanupAudio = () => {
+  function cleanupAudio() {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -96,7 +94,7 @@ export default function PracticeEnvironment() {
       });
       streamRef.current = null;
     }
-  };
+  }
 
   // Play Neural TTS with local IndexedDB Cache (V2 Task 6)
   const playPrompt = async () => {
@@ -215,7 +213,6 @@ export default function PracticeEnvironment() {
   // Start Recording
   const startRecording = async () => {
     setErrorMsg(null);
-    setAudioChunks([]);
     setUserAudioBlob(null);
     setRecordingDuration(0);
     cleanupAudio();
@@ -244,7 +241,6 @@ export default function PracticeEnvironment() {
       }
 
       mediaRecorderRef.current = recorder;
-      setMediaRecorder(recorder);
 
       const localChunks: Blob[] = [];
       recorder.ondataavailable = (event) => {

@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export default function Header({ showBackButton = false, backHref, title }: HeaderProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState, Suspense, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Flame, Clock, Award, Home, RotateCcw, CheckCircle2, ChevronDown, ChevronUp, Loader2, AlertTriangle, Trophy, Sparkles, Share2, Download, Check, X } from 'lucide-react';
+import { Flame, Clock, Award, Home, RotateCcw, ChevronDown, ChevronUp, Loader2, AlertTriangle, Trophy, Sparkles, Share2, Check } from 'lucide-react';
 import Header from '@/components/Header';
 import { db, Attempt, PhonemeIssue, Achievement } from '@/lib/db';
 import { recordSessionCompletion, Streak } from '@/lib/streak';
@@ -20,7 +20,6 @@ interface UnlockedAchievementNotify {
 }
 
 function ResultContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const startParam = searchParams.get('start');
   const { lang, t } = useLanguage();
