@@ -3,19 +3,20 @@ export interface Sentence {
   text: string;
   category: 'daily-conversation' | 'business' | 'travel' | 'news' | 'movies';
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  audioUrl?: string;
 }
 
 export const AMERICAN_PHRASES: Sentence[] = [
   // DAILY CONVERSATION
   // Beginner
-  { id: "dc_b1", text: "How is it going?", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b2", text: "Have a nice day.", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b3", text: "See you later.", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b4", text: "Thanks a lot.", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b5", text: "What's up?", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b6", text: "Take care.", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b7", text: "Nice to meet you.", category: "daily-conversation", difficulty: "beginner" },
-  { id: "dc_b8", text: "Excuse me.", category: "daily-conversation", difficulty: "beginner" },
+  { id: "dc_b1", text: "How is it going?", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b1.mp3" },
+  { id: "dc_b2", text: "Have a nice day.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b2.mp3" },
+  { id: "dc_b3", text: "See you later.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b3.mp3" },
+  { id: "dc_b4", text: "Thanks a lot.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b4.mp3" },
+  { id: "dc_b5", text: "What's up?", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b5.mp3" },
+  { id: "dc_b6", text: "Take care.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b6.mp3" },
+  { id: "dc_b7", text: "Nice to meet you.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b7.mp3" },
+  { id: "dc_b8", text: "Excuse me.", category: "daily-conversation", difficulty: "beginner", audioUrl: "/audio/dc_b8.mp3" },
   // Intermediate
   { id: "dc_i1", text: "Water under the bridge.", category: "daily-conversation", difficulty: "intermediate" },
   { id: "dc_i2", text: "Let's call it a day.", category: "daily-conversation", difficulty: "intermediate" },
@@ -35,12 +36,12 @@ export const AMERICAN_PHRASES: Sentence[] = [
 
   // BUSINESS
   // Beginner
-  { id: "biz_b1", text: "Let's start the meeting.", category: "business", difficulty: "beginner" },
-  { id: "biz_b2", text: "Send me the report.", category: "business", difficulty: "beginner" },
-  { id: "biz_b3", text: "What is the deadline?", category: "business", difficulty: "beginner" },
-  { id: "biz_b4", text: "We need to approve this.", category: "business", difficulty: "beginner" },
-  { id: "biz_b5", text: "Reply to his email.", category: "business", difficulty: "beginner" },
-  { id: "biz_b6", text: "Who is in charge here?", category: "business", difficulty: "beginner" },
+  { id: "biz_b1", text: "Let's start the meeting.", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b1.mp3" },
+  { id: "biz_b2", text: "Send me the report.", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b2.mp3" },
+  { id: "biz_b3", text: "What is the deadline?", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b3.mp3" },
+  { id: "biz_b4", text: "We need to approve this.", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b4.mp3" },
+  { id: "biz_b5", text: "Reply to his email.", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b5.mp3" },
+  { id: "biz_b6", text: "Who is in charge here?", category: "business", difficulty: "beginner", audioUrl: "/audio/biz_b6.mp3" },
   // Intermediate
   { id: "biz_i1", text: "Let's touch base next week.", category: "business", difficulty: "intermediate" },
   { id: "biz_i2", text: "We need to align on the project goals.", category: "business", difficulty: "intermediate" },
@@ -58,12 +59,12 @@ export const AMERICAN_PHRASES: Sentence[] = [
 
   // TRAVEL
   // Beginner
-  { id: "trv_b1", text: "Where is the airport?", category: "travel", difficulty: "beginner" },
-  { id: "trv_b2", text: "I need a taxi.", category: "travel", difficulty: "beginner" },
-  { id: "trv_b3", text: "Here is my passport.", category: "travel", difficulty: "beginner" },
-  { id: "trv_b4", text: "Can I get a receipt?", category: "travel", difficulty: "beginner" },
-  { id: "trv_b5", text: "Where is the hotel?", category: "travel", difficulty: "beginner" },
-  { id: "trv_b6", text: "Is this the bus stop?", category: "travel", difficulty: "beginner" },
+  { id: "trv_b1", text: "Where is the airport?", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b1.mp3" },
+  { id: "trv_b2", text: "I need a taxi.", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b2.mp3" },
+  { id: "trv_b3", text: "Here is my passport.", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b3.mp3" },
+  { id: "trv_b4", text: "Can I get a receipt?", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b4.mp3" },
+  { id: "trv_b5", text: "Where is the hotel?", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b5.mp3" },
+  { id: "trv_b6", text: "Is this the bus stop?", category: "travel", difficulty: "beginner", audioUrl: "/audio/trv_b6.mp3" },
   // Intermediate
   { id: "trv_i1", text: "Could you tell me how to get to the train station?", category: "travel", difficulty: "intermediate" },
   { id: "trv_i2", text: "I would like to check in for my flight.", category: "travel", difficulty: "intermediate" },
@@ -81,11 +82,11 @@ export const AMERICAN_PHRASES: Sentence[] = [
 
   // NEWS
   // Beginner
-  { id: "nws_b1", text: "The weather is hot today.", category: "news", difficulty: "beginner" },
-  { id: "nws_b2", text: "Stock prices went up.", category: "news", difficulty: "beginner" },
-  { id: "nws_b3", text: "A new law was passed.", category: "news", difficulty: "beginner" },
-  { id: "nws_b4", text: "The game starts at eight.", category: "news", difficulty: "beginner" },
-  { id: "nws_b5", text: "He won the gold medal.", category: "news", difficulty: "beginner" },
+  { id: "nws_b1", text: "The weather is hot today.", category: "news", difficulty: "beginner", audioUrl: "/audio/nws_b1.mp3" },
+  { id: "nws_b2", text: "Stock prices went up.", category: "news", difficulty: "beginner", audioUrl: "/audio/nws_b2.mp3" },
+  { id: "nws_b3", text: "A new law was passed.", category: "news", difficulty: "beginner", audioUrl: "/audio/nws_b3.mp3" },
+  { id: "nws_b4", text: "The game starts at eight.", category: "news", difficulty: "beginner", audioUrl: "/audio/nws_b4.mp3" },
+  { id: "nws_b5", text: "He won the gold medal.", category: "news", difficulty: "beginner", audioUrl: "/audio/nws_b5.mp3" },
   // Intermediate
   { id: "nws_i1", text: "The government announced new economic policies today.", category: "news", difficulty: "intermediate" },
   { id: "nws_i2", text: "Scientists discovered a potential new clean energy source.", category: "news", difficulty: "intermediate" },
@@ -101,11 +102,11 @@ export const AMERICAN_PHRASES: Sentence[] = [
 
   // MOVIES
   // Beginner
-  { id: "mov_b1", text: "May the Force be with you.", category: "movies", difficulty: "beginner" },
-  { id: "mov_b2", text: "There's no place like home.", category: "movies", difficulty: "beginner" },
-  { id: "mov_b3", text: "I'll be back.", category: "movies", difficulty: "beginner" },
-  { id: "mov_b4", text: "Houston, we have a problem.", category: "movies", difficulty: "beginner" },
-  { id: "mov_b5", text: "You're gonna need a bigger boat.", category: "movies", difficulty: "beginner" },
+  { id: "mov_b1", text: "May the Force be with you.", category: "movies", difficulty: "beginner", audioUrl: "/audio/mov_b1.mp3" },
+  { id: "mov_b2", text: "There's no place like home.", category: "movies", difficulty: "beginner", audioUrl: "/audio/mov_b2.mp3" },
+  { id: "mov_b3", text: "I'll be back.", category: "movies", difficulty: "beginner", audioUrl: "/audio/mov_b3.mp3" },
+  { id: "mov_b4", text: "Houston, we have a problem.", category: "movies", difficulty: "beginner", audioUrl: "/audio/mov_b4.mp3" },
+  { id: "mov_b5", text: "You're gonna need a bigger boat.", category: "movies", difficulty: "beginner", audioUrl: "/audio/mov_b5.mp3" },
   // Intermediate
   { id: "mov_i1", text: "Frankly, my dear, I don't give a damn.", category: "movies", difficulty: "intermediate" },
   { id: "mov_i2", text: "Keep your friends close, but your enemies closer.", category: "movies", difficulty: "intermediate" },
@@ -126,7 +127,8 @@ export const AMERICAN_PARAGRAPHS: Sentence[] = [
     id: "p_dc_b1",
     text: "How is it going? Have a nice day. See you later.",
     category: "daily-conversation",
-    difficulty: "beginner"
+    difficulty: "beginner",
+    audioUrl: "/audio/p_dc_b1.mp3"
   },
   {
     id: "p_dc_i1",
@@ -146,7 +148,8 @@ export const AMERICAN_PARAGRAPHS: Sentence[] = [
     id: "p_biz_b1",
     text: "Let's start the meeting. Send me the report as soon as possible.",
     category: "business",
-    difficulty: "beginner"
+    difficulty: "beginner",
+    audioUrl: "/audio/p_biz_b1.mp3"
   },
   {
     id: "p_biz_i1",
@@ -166,7 +169,8 @@ export const AMERICAN_PARAGRAPHS: Sentence[] = [
     id: "p_trv_b1",
     text: "Where is the airport? I need a taxi immediately.",
     category: "travel",
-    difficulty: "beginner"
+    difficulty: "beginner",
+    audioUrl: "/audio/p_trv_b1.mp3"
   },
   {
     id: "p_trv_i1",
@@ -186,7 +190,8 @@ export const AMERICAN_PARAGRAPHS: Sentence[] = [
     id: "p_nws_b1",
     text: "The weather is hot today. Stock prices went up.",
     category: "news",
-    difficulty: "beginner"
+    difficulty: "beginner",
+    audioUrl: "/audio/p_nws_b1.mp3"
   },
   {
     id: "p_nws_i1",
@@ -206,7 +211,8 @@ export const AMERICAN_PARAGRAPHS: Sentence[] = [
     id: "p_mov_b1",
     text: "May the Force be with you. There's no place like home.",
     category: "movies",
-    difficulty: "beginner"
+    difficulty: "beginner",
+    audioUrl: "/audio/p_mov_b1.mp3"
   },
   {
     id: "p_mov_i1",

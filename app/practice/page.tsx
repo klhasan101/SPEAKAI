@@ -104,51 +104,66 @@ export default function PracticeEnvironment() {
     setAppState('PLAYING_PROMPT');
 
     try {
-      let audioBlob: Blob;
+      let audioUrl = '';
       
-      // 1. Check Dexie IndexedDB cache first
-      const cached = await db.ttsCache.get(currentSentence.text);
-      if (cached) {
-        audioBlob = cached.audioBlob;
+      if (currentSentence.audioUrl) {
+        // Use pre-recorded high-quality human voice file
+        audioUrl = currentSentence.audioUrl;
       } else {
-        // 2. Fetch from Neural TTS endpoint
-        const headers: Record<string, string> = {};
-        const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
-        if (customKey) {
-          headers['x-gemini-api-key'] = customKey;
-        }
-
-        const res = await fetch(`/api/tts?text=${encodeURIComponent(currentSentence.text)}`, {
-          headers
-        });
-        if (!res.ok) {
-          throw new Error('Neural TTS failed');
-        }
-        audioBlob = await res.blob();
+        let audioBlob: Blob;
         
-        // Cache the result for future practice sessions
-        await db.ttsCache.put({
-          text: currentSentence.text,
-          audioBlob,
-          timestamp: Date.now()
-        });
+        // 1. Check Dexie IndexedDB cache first
+        const cached = await db.ttsCache.get(currentSentence.text);
+        if (cached) {
+          audioBlob = cached.audioBlob;
+        } else {
+          // 2. Fetch from Neural TTS endpoint
+          const headers: Record<string, string> = {};
+          const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
+          if (customKey) {
+            headers['x-gemini-api-key'] = customKey;
+          }
+          const customModel = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_gemini_model') : null;
+          if (customModel) {
+            headers['x-gemini-model'] = customModel;
+          }
+
+          const res = await fetch(`/api/tts?text=${encodeURIComponent(currentSentence.text)}`, {
+            headers
+          });
+          if (!res.ok) {
+            throw new Error('Neural TTS failed');
+          }
+          audioBlob = await res.blob();
+          
+          // Cache the result for future practice sessions
+          await db.ttsCache.put({
+            text: currentSentence.text,
+            audioBlob,
+            timestamp: Date.now()
+          });
+        }
+        audioUrl = URL.createObjectURL(audioBlob);
       }
 
-      // Play audio Blob
-      const audioUrl = URL.createObjectURL(audioBlob);
+      // Play audio from audioUrl
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
       audio.playbackRate = voiceSpeed;
 
       audio.onended = () => {
         setAppState('IDLE');
-        URL.revokeObjectURL(audioUrl);
+        if (!currentSentence.audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
         audioRef.current = null;
       };
 
       audio.onerror = () => {
-        console.warn('Cached audio playback failed, falling back to Web Speech Synthesis.');
-        URL.revokeObjectURL(audioUrl);
+        console.warn('Audio playback failed, falling back to Web Speech Synthesis.');
+        if (!currentSentence.audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
         audioRef.current = null;
         playNativeTTSFallback();
       };
@@ -156,7 +171,7 @@ export default function PracticeEnvironment() {
       await audio.play();
 
     } catch (err) {
-      console.warn('Neural TTS generation failed. Falling back to native browser speech synthesis:', err);
+      console.warn('TTS generation failed. Falling back to native browser speech synthesis:', err);
       playNativeTTSFallback();
     }
   };
@@ -196,17 +211,32 @@ export default function PracticeEnvironment() {
   const playOriginalComparison = async () => {
     if (!currentSentence) return;
     try {
+      if (currentSentence.audioUrl) {
+        const audio = new Audio(currentSentence.audioUrl);
+        audio.playbackRate = voiceSpeed;
+        await audio.play();
+        return;
+      }
       const cached = await db.ttsCache.get(currentSentence.text);
       if (cached) {
         const url = URL.createObjectURL(cached.audioBlob);
         const audio = new Audio(url);
         audio.playbackRate = voiceSpeed;
-        audio.play();
+        await audio.play();
       } else {
         playNativeTTSFallback();
       }
     } catch {
+      playOriginalComparisonFallback();
+    }
+  };
+
+  // Helper fallback to make code robust
+  const playOriginalComparisonFallback = () => {
+    try {
       playNativeTTSFallback();
+    } catch (e) {
+      console.error(e);
     }
   };
 
