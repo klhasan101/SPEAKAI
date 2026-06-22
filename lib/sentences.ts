@@ -119,3 +119,105 @@ export const AMERICAN_PHRASES: Sentence[] = [
   { id: "mov_a4", text: "I love the smell of napalm in the morning.", category: "movies", difficulty: "advanced" },
   { id: "mov_a5", text: "The stuff that dreams are made of.", category: "movies", difficulty: "advanced" }
 ];
+
+export const AMERICAN_PARAGRAPHS: Sentence[] = [
+  // DAILY CONVERSATION
+  {
+    id: "p_dc_b1",
+    text: "How is it going? Have a nice day. See you later.",
+    category: "daily-conversation",
+    difficulty: "beginner"
+  },
+  {
+    id: "p_dc_i1",
+    text: "Water under the bridge. Let's call it a day.",
+    category: "daily-conversation",
+    difficulty: "intermediate"
+  },
+  {
+    id: "p_dc_a1",
+    text: "It's not worth crying over spilled milk. She decided to bite the bullet and face the consequences.",
+    category: "daily-conversation",
+    difficulty: "advanced"
+  },
+
+  // BUSINESS
+  {
+    id: "p_biz_b1",
+    text: "Let's start the meeting. Send me the report as soon as possible.",
+    category: "business",
+    difficulty: "beginner"
+  },
+  {
+    id: "p_biz_i1",
+    text: "Let's touch base next week. We need to align on the project goals.",
+    category: "business",
+    difficulty: "intermediate"
+  },
+  {
+    id: "p_biz_a1",
+    text: "We need to leverage our core competencies to gain market share. This merger represents a significant synergistic opportunity.",
+    category: "business",
+    difficulty: "advanced"
+  },
+
+  // TRAVEL
+  {
+    id: "p_trv_b1",
+    text: "Where is the airport? I need a taxi immediately.",
+    category: "travel",
+    difficulty: "beginner"
+  },
+  {
+    id: "p_trv_i1",
+    text: "I would like to check in for my flight. Is there a local restaurant you would recommend?",
+    category: "travel",
+    difficulty: "intermediate"
+  },
+  {
+    id: "p_trv_a1",
+    text: "I've experienced a flight delay and need to reschedule my connection. Is travel insurance mandatory for entering the country?",
+    category: "travel",
+    difficulty: "advanced"
+  },
+
+  // NEWS
+  {
+    id: "p_nws_b1",
+    text: "The weather is hot today. Stock prices went up.",
+    category: "news",
+    difficulty: "beginner"
+  },
+  {
+    id: "p_nws_i1",
+    text: "The government announced new economic policies today. Scientists discovered a potential new clean energy source.",
+    category: "news",
+    difficulty: "intermediate"
+  },
+  {
+    id: "p_nws_a1",
+    text: "Geopolitical tensions have significantly impacted international trade routes. Fluctuations in the commodity markets triggered economic concerns.",
+    category: "news",
+    difficulty: "advanced"
+  },
+
+  // MOVIES
+  {
+    id: "p_mov_b1",
+    text: "May the Force be with you. There's no place like home.",
+    category: "movies",
+    difficulty: "beginner"
+  },
+  {
+    id: "p_mov_i1",
+    text: "Keep your friends close, but your enemies closer. Show me the money!",
+    category: "movies",
+    difficulty: "intermediate"
+  },
+  {
+    id: "p_mov_a1",
+    text: "Fasten your seatbelts. It's going to be a bumpy night. You can't handle the truth!",
+    category: "movies",
+    difficulty: "advanced"
+  }
+];

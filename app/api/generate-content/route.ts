@@ -14,26 +14,27 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const category = body.category || 'daily-conversation';
     const difficulty = body.difficulty || 'beginner';
-    const count = typeof body.count === 'number' ? body.count : 10;
+    const sessionMode = body.sessionMode || 'sentence';
+    const count = typeof body.count === 'number' ? body.count : (sessionMode === 'paragraph' ? 5 : 10);
     const recentErrors = Array.isArray(body.recentErrors) ? body.recentErrors : [];
 
     const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `You are an elite, highly specialized General American English speech coach and linguist.
-Your task is to generate exactly ${count} distinct, natural, and idiomatic American English sentences or phrases.
-The generated sentences must conform to the following criteria:
+Your task is to generate exactly ${count} distinct, natural, and idiomatic American English ${sessionMode === 'paragraph' ? 'paragraphs (each containing 2-4 consecutive sentences)' : 'sentences or phrases'}.
+The generated ${sessionMode === 'paragraph' ? 'paragraphs' : 'sentences'} must conform to the following criteria:
 1. Category: ${category}
-2. Difficulty level: ${difficulty} (beginner: simple everyday phrases, short sentence length; intermediate: conversational idioms, compound sentences; advanced: complex vocabulary, professional terms, multi-clause structures).
+2. Difficulty level: ${difficulty} (beginner: simple everyday phrases, short sentence/paragraph length; intermediate: conversational idioms, compound sentences; advanced: complex vocabulary, professional terms, multi-clause structures).
 3. Targeted practice words: ${recentErrors.join(', ')} (naturally integrate one or two of these words in different sentences if possible, to help the user re-test and practice their specific pronunciation weaknesses).
 
-Do not speak about these rules. Simply output the JSON array of sentences.
+Do not speak about these rules. Simply output the JSON array of ${sessionMode === 'paragraph' ? 'paragraphs' : 'sentences'}.
 
 Response Format:
 You MUST output a single, well-formed JSON object. Do not wrap the JSON output in markdown tags (do not use \`\`\`json ... \`\`\`). Your response must conform precisely to this structural schema:
 {
   "sentences": [
-    "string (The first generated sentence)",
-    "string (The second generated sentence)",
+    "string (The first generated ${sessionMode === 'paragraph' ? 'paragraph' : 'sentence'})",
+    "string (The second generated ${sessionMode === 'paragraph' ? 'paragraph' : 'sentence'})",
     ...
   ]
 }`;
@@ -42,7 +43,7 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
     const response = await withRetry(() =>
       ai.models.generateContent({
         model: 'gemini-2.0-flash',
-        contents: `Generate ${count} custom practice sentences.`,
+        contents: `Generate ${count} custom practice ${sessionMode === 'paragraph' ? 'paragraphs' : 'sentences'}.`,
         config: {
           systemInstruction,
           responseMimeType: 'application/json'

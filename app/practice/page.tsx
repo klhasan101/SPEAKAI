@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle } from 'lucide-react';
 import Header from '@/components/Header';
-import { AMERICAN_PHRASES, Sentence } from '@/lib/sentences';
+import { AMERICAN_PHRASES, AMERICAN_PARAGRAPHS, Sentence } from '@/lib/sentences';
 import { db } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -26,6 +26,7 @@ export default function PracticeEnvironment() {
   const [isSetupActive, setIsSetupActive] = useState<boolean>(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('daily-conversation');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('beginner');
+  const [sessionMode, setSessionMode] = useState<'sentence' | 'paragraph'>('sentence');
   
   // V2 Task 4: AI content source mode state
   const [sourceMode, setSourceMode] = useState<'static' | 'ai'>('static');
@@ -428,7 +429,8 @@ export default function PracticeEnvironment() {
           body: JSON.stringify({
             category: selectedCategory,
             difficulty: selectedDifficulty,
-            count: 10,
+            sessionMode,
+            count: sessionMode === 'paragraph' ? 5 : 10,
             recentErrors
           })
         });
@@ -466,7 +468,9 @@ export default function PracticeEnvironment() {
     }
 
     // Static source mode:
-    const filtered = AMERICAN_PHRASES.filter(s => {
+    const sourceBank = sessionMode === 'paragraph' ? AMERICAN_PARAGRAPHS : AMERICAN_PHRASES;
+
+    const filtered = sourceBank.filter(s => {
       const matchCat = selectedCategory === 'all' || s.category === selectedCategory;
       const matchDiff = selectedDifficulty === 'all' || s.difficulty === selectedDifficulty;
       return matchCat && matchDiff;
@@ -478,7 +482,8 @@ export default function PracticeEnvironment() {
     }
 
     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
-    setSentences(shuffled.slice(0, Math.min(filtered.length, 10)));
+    const targetCount = sessionMode === 'paragraph' ? 5 : 10;
+    setSentences(shuffled.slice(0, Math.min(filtered.length, targetCount)));
     setCurrentIndex(0);
     setSessionStartTime(Date.now());
     setIsSetupActive(false);
@@ -545,6 +550,40 @@ export default function PracticeEnvironment() {
         <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10 overflow-y-auto">
           <div className="space-y-6">
             
+            {/* Session Mode Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <PlayCircle className="w-4 h-4 text-primary" />
+                <span>{t('selectSessionMode')}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSessionMode('sentence')}
+                  className={`py-3 px-4 rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
+                    sessionMode === 'sentence'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      : 'bg-card border-border hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <span className="text-sm font-bold">{t('modeSentence')}</span>
+                  <span className="text-[9px] leading-tight opacity-90 font-normal">{t('sessionModeSentenceDesc')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSessionMode('paragraph')}
+                  className={`py-3 px-4 rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
+                    sessionMode === 'paragraph'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      : 'bg-card border-border hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <span className="text-sm font-bold">{t('modeParagraph')}</span>
+                  <span className="text-[9px] leading-tight opacity-90 font-normal">{t('sessionModeParagraphDesc')}</span>
+                </button>
+              </div>
+            </div>
+
             {/* Category Selector */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">

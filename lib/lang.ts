@@ -79,7 +79,19 @@ export const translations = {
     selectSourceMode: "Practice Phrasing Source",
     modeStatic: "Standard Bank",
     modeAI: "AI Personalized Generator",
-    generatingAI: "Generating AI practice sentences..."
+    generatingAI: "Generating AI practice sentences...",
+    // V2 Paragraph & Achievement Translations
+    selectSessionMode: "Select Practice Mode",
+    modeSentence: "Sentence Mode",
+    modeParagraph: "Paragraph Mode",
+    sessionModeSentenceDesc: "Practice with short, individual sentences (10 rounds)",
+    sessionModeParagraphDesc: "Practice with multi-sentence paragraphs (5 rounds)",
+    practiceMode: "Practice Mode",
+    achievementsTitle: "Unlocked Achievements",
+    achievementsDesc: "Your milestones unlocked during practice:",
+    downloadCard: "Download Share Card",
+    generatingShareCard: "Generating share card...",
+    achievementsUnlockedNotify: "New Achievement Unlocked!"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -159,6 +171,18 @@ export const translations = {
     selectSourceMode: "مصدر جمل التدريب",
     modeStatic: "البنك القياسي",
     modeAI: "التوليد الذكي المخصص",
-    generatingAI: "جاري توليد الجمل المخصصة بالذكاء الاصطناعي..."
+    generatingAI: "جاري توليد الجمل المخصصة بالذكاء الاصطناعي...",
+    // V2 Paragraph & Achievement Translations
+    selectSessionMode: "اختر نمط التدريب",
+    modeSentence: "نمط الجمل",
+    modeParagraph: "نمط الفقرات",
+    sessionModeSentenceDesc: "تدرب بجمل قصيرة ومنفردة (10 جولات)",
+    sessionModeParagraphDesc: "تدرب بفقرات مكونة من عدة جمل (5 جولات)",
+    practiceMode: "نمط التدريب",
+    achievementsTitle: "الإنجازات المفتوحة",
+    achievementsDesc: "الأهداف التي حققتها أثناء تدريبك:",
+    downloadCard: "تحميل بطاقة المشاركة",
+    generatingShareCard: "جاري توليد بطاقة المشاركة...",
+    achievementsUnlockedNotify: "تم فتح إنجاز جديد!"
   }
 };

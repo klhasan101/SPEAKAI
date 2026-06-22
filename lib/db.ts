@@ -23,19 +23,31 @@ export interface PhonemeIssue {
   lastSeen: number;
 }
 
+export interface Achievement {
+  id: string; // unique ID, e.g. 'first_step', 'perfect_pitch', 'super_shadow', 'persistence', 'fluent_focus'
+  titleEn: string;
+  titleAr: string;
+  descriptionEn: string;
+  descriptionAr: string;
+  unlockedAt: number; // timestamp
+}
+
 class ShadowSpeakDB extends Dexie {
   attempts!: Table<Attempt>;
   ttsCache!: Table<TTSCacheEntry>;
   phonemeIssues!: Table<PhonemeIssue>;
+  achievements!: Table<Achievement>;
 
   constructor() {
     super('ShadowSpeakDB');
-    this.version(3).stores({
+    this.version(4).stores({
       attempts: '++id, sentenceId, score, timestamp',
       ttsCache: 'text',
-      phonemeIssues: 'word, count, lastSeen'
+      phonemeIssues: 'word, count, lastSeen',
+      achievements: 'id, unlockedAt'
     });
   }
 }
 
 export const db = new ShadowSpeakDB();
+
