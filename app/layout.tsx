@@ -29,10 +29,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-[100dvh] overflow-hidden antialiased" suppressHydrationWarning>
-      <body className="h-[100dvh] w-full bg-neutral-950 flex flex-col items-center justify-center overflow-hidden">
+      <body className="h-[100dvh] w-full bg-neutral-950 flex flex-col items-center justify-center overflow-hidden p-3">
         <Providers>
           {/* Strict Layout Boundary: Mobile Container Wrapper */}
-          <div className="w-full max-w-md h-full bg-background border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
+          <div className="w-full max-w-md h-full bg-background border border-border rounded-[24px] shadow-2xl flex flex-col relative overflow-hidden">
             <main className="flex-1 flex flex-col min-h-0 relative overflow-hidden">
               {children}
             </main>
