@@ -70,7 +70,16 @@ export const translations = {
     cat_movies: "Movies",
     diff_beginner: "Beginner",
     diff_intermediate: "Intermediate",
-    diff_advanced: "Advanced"
+    diff_advanced: "Advanced",
+    // Weakness Tracking Translations (V2 Task 9)
+    weaknessesTitle: "Acoustic Weaknesses",
+    weaknessesDesc: "Your most common pronunciation mistakes across all sessions:",
+    timesMispronounced: "{count} times",
+    // V2 Source Mode Translations (Task 4)
+    selectSourceMode: "Practice Phrasing Source",
+    modeStatic: "Standard Bank",
+    modeAI: "AI Personalized Generator",
+    generatingAI: "Generating AI practice sentences..."
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -141,6 +150,15 @@ export const translations = {
     cat_movies: "الأفلام",
     diff_beginner: "مبتدئ",
     diff_intermediate: "متوسط",
-    diff_advanced: "متقدم"
+    diff_advanced: "متقدم",
+    // Weakness Tracking Translations (V2 Task 9)
+    weaknessesTitle: "نقاط الضعف الصوتية",
+    weaknessesDesc: "الكلمات الأكثر صعوبة لديك عبر جميع الجلسات:",
+    timesMispronounced: "{count} مرات",
+    // V2 Source Mode Translations (Task 4)
+    selectSourceMode: "مصدر جمل التدريب",
+    modeStatic: "البنك القياسي",
+    modeAI: "التوليد الذكي المخصص",
+    generatingAI: "جاري توليد الجمل المخصصة بالذكاء الاصطناعي..."
   }
 };

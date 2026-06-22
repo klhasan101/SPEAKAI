@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle, HelpCircle } from 'lucide-react';
+import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import { AMERICAN_PHRASES, Sentence } from '@/lib/sentences';
 import { db } from '@/lib/db';
@@ -26,6 +26,10 @@ export default function PracticeEnvironment() {
   const [isSetupActive, setIsSetupActive] = useState<boolean>(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('daily-conversation');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('beginner');
+  
+  // V2 Task 4: AI content source mode state
+  const [sourceMode, setSourceMode] = useState<'static' | 'ai'>('static');
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
   // Active session states
   const [sentences, setSentences] = useState<Sentence[]>([]);
@@ -340,6 +344,31 @@ export default function PracticeEnvironment() {
         words: evalResult.words
       });
 
+      // Record any mispronounced or missing words to phonemeIssues (V2 Task 9)
+      if (evalResult.words && evalResult.words.length > 0) {
+        for (const w of evalResult.words) {
+          if (w.status === 'mispronounced' || w.status === 'missing') {
+            const cleanWord = w.word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, '').trim().toLowerCase();
+            if (cleanWord) {
+              const existing = await db.phonemeIssues.get(cleanWord);
+              if (existing) {
+                await db.phonemeIssues.put({
+                  word: cleanWord,
+                  count: existing.count + 1,
+                  lastSeen: Date.now()
+                });
+              } else {
+                await db.phonemeIssues.put({
+                  word: cleanWord,
+                  count: 1,
+                  lastSeen: Date.now()
+                });
+              }
+            }
+          }
+        }
+      }
+
       setAppState('FEEDBACK_READY');
     } catch (err: any) {
       console.error('API Evaluation failed:', err);
@@ -370,8 +399,63 @@ export default function PracticeEnvironment() {
     }
   };
 
-  // V2 Initialize Practice block based on filters
-  const handleStartPractice = () => {
+  // V2 Initialize Practice block based on filters & dynamic AI generation
+  const handleStartPractice = async () => {
+    setErrorMsg(null);
+    
+    // AI Generation Source Mode (V2 Task 4)
+    if (sourceMode === 'ai') {
+      setIsGenerating(true);
+      try {
+        // Fetch top weaknesses to feed to Gemini
+        const allIssues = await db.phonemeIssues.toArray();
+        allIssues.sort((a, b) => b.count - a.count);
+        const recentErrors = allIssues.slice(0, 5).map(x => x.word);
+
+        const res = await fetch('/api/generate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category: selectedCategory,
+            difficulty: selectedDifficulty,
+            count: 10,
+            recentErrors
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || t('apiError'));
+        }
+
+        const data = await res.json();
+        if (!data.sentences || data.sentences.length === 0) {
+          throw new Error(t('invalidResponse'));
+        }
+
+        // Format strings to Sentence objects
+        const formatted: Sentence[] = data.sentences.map((text: string, index: number) => ({
+          id: `ai_${Date.now()}_${index}`,
+          text,
+          category: selectedCategory as any,
+          difficulty: selectedDifficulty as any
+        }));
+
+        setSentences(formatted);
+        setCurrentIndex(0);
+        setSessionStartTime(Date.now());
+        setIsSetupActive(false);
+        setAppState('IDLE');
+      } catch (err: any) {
+        console.error('Failed to generate AI sentences:', err);
+        setErrorMsg(err.message || t('unknownError'));
+      } finally {
+        setIsGenerating(false);
+      }
+      return;
+    }
+
+    // Static source mode:
     const filtered = AMERICAN_PHRASES.filter(s => {
       const matchCat = selectedCategory === 'all' || s.category === selectedCategory;
       const matchDiff = selectedDifficulty === 'all' || s.difficulty === selectedDifficulty;
@@ -383,7 +467,6 @@ export default function PracticeEnvironment() {
       return;
     }
 
-    setErrorMsg(null);
     const shuffled = [...filtered].sort(() => 0.5 - Math.random());
     setSentences(shuffled.slice(0, Math.min(filtered.length, 10)));
     setCurrentIndex(0);
@@ -449,7 +532,7 @@ export default function PracticeEnvironment() {
 
       {isSetupActive ? (
         /* V2 Setup UI */
-        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10">
+        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10 overflow-y-auto">
           <div className="space-y-6">
             
             {/* Category Selector */}
@@ -498,6 +581,38 @@ export default function PracticeEnvironment() {
               </div>
             </div>
 
+            {/* Source Mode Selector (V2 Task 4) */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span>{t('selectSourceMode')}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSourceMode('static')}
+                  className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                    sourceMode === 'static'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      : 'bg-card border-border hover:bg-muted text-foreground'
+                  }`}
+                >
+                  {t('modeStatic')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceMode('ai')}
+                  className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                    sourceMode === 'ai'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      : 'bg-card border-border hover:bg-muted text-foreground'
+                  }`}
+                >
+                  {t('modeAI')}
+                </button>
+              </div>
+            </div>
+
             {errorMsg && (
               <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -508,10 +623,20 @@ export default function PracticeEnvironment() {
 
           <button
             onClick={handleStartPractice}
-            className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
+            disabled={isGenerating}
+            className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md disabled:opacity-75"
           >
-            {t('startPracticeBtn')}
-            <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                {t('generatingAI')}
+              </>
+            ) : (
+              <>
+                {t('startPracticeBtn')}
+                <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+              </>
+            )}
           </button>
         </div>
       ) : (
@@ -613,48 +738,48 @@ export default function PracticeEnvironment() {
                         }`}
                       >
                         {speed}x
-                    </button>
-                  ))}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Action Buttons Row */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Listen CTA */}
-                <button
-                  onClick={playPrompt}
-                  disabled={appState === 'PLAYING_PROMPT' || !currentSentence}
-                  className="py-4 rounded-2xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-2 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50"
-                >
-                  <Volume2 className="w-5 h-5 text-primary" />
-                  {t('listen')}
-                </button>
+                {/* Action Buttons Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Listen CTA */}
+                  <button
+                    onClick={playPrompt}
+                    disabled={appState === 'PLAYING_PROMPT' || !currentSentence}
+                    className="py-4 rounded-2xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-2 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50"
+                  >
+                    <Volume2 className="w-5 h-5 text-primary" />
+                    {t('listen')}
+                  </button>
 
-                {/* Record / Stop CTA */}
-                {appState === 'RECORDING' ? (
-                  <button
-                    onClick={stopRecording}
-                    className="py-4 rounded-2xl bg-foreground text-background font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden"
-                  >
-                    <Square className="w-5 h-5 fill-current text-destructive animate-pulse" />
-                    {t('stop')} ({15 - recordingDuration}s)
-                  </button>
-                ) : (
-                  <button
-                    onClick={startRecording}
-                    disabled={!currentSentence}
-                    className="py-4 rounded-2xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
-                  >
-                    <Mic className="w-5 h-5 fill-current" />
-                    {t('record')}
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+                  {/* Record / Stop CTA */}
+                  {appState === 'RECORDING' ? (
+                    <button
+                      onClick={stopRecording}
+                      className="py-4 rounded-2xl bg-foreground text-background font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden"
+                    >
+                      <Square className="w-5 h-5 fill-current text-destructive animate-pulse" />
+                      {t('stop')} ({15 - recordingDuration}s)
+                    </button>
+                  ) : (
+                    <button
+                      onClick={startRecording}
+                      disabled={!currentSentence}
+                      className="py-4 rounded-2xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
+                    >
+                      <Mic className="w-5 h-5 fill-current" />
+                      {t('record')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* Sliding Feedback Modal from bottom */}
       <AnimatePresence>

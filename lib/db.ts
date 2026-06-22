@@ -17,15 +17,23 @@ export interface TTSCacheEntry {
   timestamp: number;
 }
 
+export interface PhonemeIssue {
+  word: string;
+  count: number;
+  lastSeen: number;
+}
+
 class ShadowSpeakDB extends Dexie {
   attempts!: Table<Attempt>;
   ttsCache!: Table<TTSCacheEntry>;
+  phonemeIssues!: Table<PhonemeIssue>;
 
   constructor() {
     super('ShadowSpeakDB');
-    this.version(2).stores({
+    this.version(3).stores({
       attempts: '++id, sentenceId, score, timestamp',
-      ttsCache: 'text'
+      ttsCache: 'text',
+      phonemeIssues: 'word, count, lastSeen'
     });
   }
 }

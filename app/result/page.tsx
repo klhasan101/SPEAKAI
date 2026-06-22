@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Flame, Clock, Award, Home, RotateCcw, CheckCircle2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Flame, Clock, Award, Home, RotateCcw, CheckCircle2, ChevronDown, ChevronUp, Loader2, AlertTriangle } from 'lucide-react';
 import Header from '@/components/Header';
-import { db, Attempt } from '@/lib/db';
+import { db, Attempt, PhonemeIssue } from '@/lib/db';
 import { recordSessionCompletion, Streak } from '@/lib/streak';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -22,6 +22,9 @@ function ResultContent() {
   const [durationStr, setDurationStr] = useState<string>('00:00');
   const [streak, setStreak] = useState<Streak | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  
+  // Weakness tracking state (V2 Task 9)
+  const [topWeaknesses, setTopWeaknesses] = useState<PhonemeIssue[]>([]);
 
   useEffect(() => {
     // Trigger confetti burst on mount
@@ -63,6 +66,12 @@ function ResultContent() {
         const mins = String(Math.floor(totalSecs / 60)).padStart(2, '0');
         const secs = String(totalSecs % 60).padStart(2, '0');
         setDurationStr(`${mins}:${secs}`);
+
+        // Fetch top 3 weaknesses from database history (V2 Task 9)
+        const allIssues = await db.phonemeIssues.toArray();
+        allIssues.sort((a, b) => b.count - a.count);
+        setTopWeaknesses(allIssues.slice(0, 3));
+
       } catch (err) {
         console.error('Failed to load session results:', err);
       }
@@ -140,7 +149,7 @@ function ResultContent() {
           <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center text-center">
             <div className="flex items-center gap-1 text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">
               <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              {t('streak').split(' ')[0]} {/* Grab "Streak" short label */}
+              {t('streak').split(' ')[0]}
             </div>
             <span className="text-2xl font-extrabold text-foreground mt-1">
               {streak ? `${streak.currentStreak}${t('day').slice(0, 1)}` : '—'}
@@ -153,6 +162,31 @@ function ResultContent() {
           <span className="text-sm font-extrabold tracking-tight">{motivation.tag}</span>
           <p className="text-xs opacity-90 leading-relaxed">{motivation.desc}</p>
         </div>
+
+        {/* V2 Task 9: Phoneme Weaknesses Summary Widget */}
+        {topWeaknesses.length > 0 && (
+          <div className="rounded-3xl border border-border bg-card p-5 flex flex-col gap-3 shadow-sm relative overflow-hidden">
+            <div className="absolute right-0 top-0 -mr-4 -mt-4 w-24 h-24 rounded-full bg-destructive/5 blur-xl pointer-events-none" />
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+              <h3 className="text-sm font-extrabold text-foreground">{t('weaknessesTitle')}</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{t('weaknessesDesc')}</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {topWeaknesses.map((issue) => (
+                <span
+                  key={issue.word}
+                  className="px-3.5 py-1.5 rounded-2xl bg-destructive/10 text-destructive text-xs font-bold flex items-center gap-1.5 border border-destructive/20"
+                >
+                  <span className="font-extrabold select-all">{issue.word}</span>
+                  <span className={`opacity-60 text-[10px] font-medium ${lang === 'ar' ? 'border-r pr-1.5 mr-1.5' : 'border-l pl-1.5 ml-1.5'} border-destructive/30`}>
+                    {t('timesMispronounced', { count: issue.count })}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Practice Attempts Breakdown */}
         {attempts.length > 0 && (
