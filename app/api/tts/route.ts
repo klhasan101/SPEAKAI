@@ -6,7 +6,8 @@ export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const customKey = req.headers.get('x-gemini-api-key') || '';
+    const apiKey = customKey.trim() || process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: 'GEMINI_API_KEY is not configured.' }, { status: 500 });
     }

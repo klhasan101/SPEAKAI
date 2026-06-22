@@ -6,7 +6,8 @@ export const maxDuration = 60; // Allow enough time for audio analysis and retri
 
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const customKey = req.headers.get('x-gemini-api-key') || '';
+    const apiKey = customKey.trim() || process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: 'GEMINI_API_KEY environment variable is not configured.' },

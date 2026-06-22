@@ -112,7 +112,15 @@ export default function PracticeEnvironment() {
         audioBlob = cached.audioBlob;
       } else {
         // 2. Fetch from Neural TTS endpoint
-        const res = await fetch(`/api/tts?text=${encodeURIComponent(currentSentence.text)}`);
+        const headers: Record<string, string> = {};
+        const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
+        if (customKey) {
+          headers['x-gemini-api-key'] = customKey;
+        }
+
+        const res = await fetch(`/api/tts?text=${encodeURIComponent(currentSentence.text)}`, {
+          headers
+        });
         if (!res.ok) {
           throw new Error('Neural TTS failed');
         }
@@ -307,8 +315,15 @@ export default function PracticeEnvironment() {
       formData.append('audio', audioBlob, 'audio.webm');
       formData.append('text', currentSentence.text);
 
+      const headers: Record<string, string> = {};
+      const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
+      if (customKey) {
+        headers['x-gemini-api-key'] = customKey;
+      }
+
       const res = await fetch('/api/evaluate', {
         method: 'POST',
+        headers,
         body: formData,
       });
 
@@ -419,9 +434,15 @@ export default function PracticeEnvironment() {
         allIssues.sort((a, b) => b.count - a.count);
         const recentErrors = allIssues.slice(0, 5).map(x => x.word);
 
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        const customKey = typeof window !== 'undefined' ? localStorage.getItem('shadowspeak_custom_api_key') : null;
+        if (customKey) {
+          headers['x-gemini-api-key'] = customKey;
+        }
+
         const res = await fetch('/api/generate-content', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             category: selectedCategory,
             difficulty: selectedDifficulty,

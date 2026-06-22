@@ -91,7 +91,16 @@ export const translations = {
     achievementsDesc: "Your milestones unlocked during practice:",
     downloadCard: "Download Share Card",
     generatingShareCard: "Generating share card...",
-    achievementsUnlockedNotify: "New Achievement Unlocked!"
+    achievementsUnlockedNotify: "New Achievement Unlocked!",
+    // Custom API Key setting
+    settingsTitle: "Settings",
+    customApiKeyLabel: "Custom Gemini API Key",
+    customApiKeyDesc: "Provide your own Gemini API key to run sessions under your own quota. It will override the server's default key. Saved locally in your browser.",
+    customApiKeyPlaceholder: "Paste your API key here (AIzaSy...)",
+    saveBtn: "Save Settings",
+    clearBtn: "Clear Custom Key",
+    settingsSaved: "API Key saved successfully!",
+    settingsCleared: "Custom API Key cleared."
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -183,6 +192,15 @@ export const translations = {
     achievementsDesc: "الأهداف التي حققتها أثناء تدريبك:",
     downloadCard: "تحميل بطاقة المشاركة",
     generatingShareCard: "جاري توليد بطاقة المشاركة...",
-    achievementsUnlockedNotify: "تم فتح إنجاز جديد!"
+    achievementsUnlockedNotify: "تم فتح إنجاز جديد!",
+    // Custom API Key setting
+    settingsTitle: "الإعدادات",
+    customApiKeyLabel: "مفتاح API الخاص بـ Gemini",
+    customApiKeyDesc: "أدخل مفتاح API الخاص بك لتشغيل الجلسات من خلال حسابك وتجاوز قيود السيرفر. يتم حفظه محلياً في متصفحك.",
+    customApiKeyPlaceholder: "أدخل مفتاح الـ API هنا (AIzaSy...)",
+    saveBtn: "حفظ الإعدادات",
+    clearBtn: "مسح المفتاح الخاص",
+    settingsSaved: "تم حفظ مفتاح API بنجاح!",
+    settingsCleared: "تم مسح مفتاح API الخاص بك."
   }
 };
