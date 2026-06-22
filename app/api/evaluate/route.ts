@@ -47,11 +47,17 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
 {
   "score": number (An integer bounded strictly between 0 and 100),
   "feedbackPositive": "string (Exactly one sentence highlighting a positive element of their delivery)",
-  "feedbackImprovement": "string (Exactly one sentence identifying a specific pronunciation mistake or structural rhythm optimization)"
+  "feedbackImprovement": "string (Exactly one sentence identifying a specific pronunciation mistake or structural rhythm optimization)",
+  "words": [
+    {
+      "word": "string (The exact word from the target sentence, preserving sequence, casing, and punctuation)",
+      "status": "correct" | "mispronounced" | "missing"
+    }
+  ]
 }`;
 
-    // Define the models to try in order of preference
-    const modelsToTry = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+    // Define the models to try in order of preference (P0 Fix: Use actual available Gemini models)
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
     let lastError: any = null;
     let evalText = '';
 
@@ -103,7 +109,8 @@ You MUST output a single, well-formed JSON object. Do not wrap the JSON output i
     if (
       typeof evaluationResult.score !== 'number' ||
       typeof evaluationResult.feedbackPositive !== 'string' ||
-      typeof evaluationResult.feedbackImprovement !== 'string'
+      typeof evaluationResult.feedbackImprovement !== 'string' ||
+      !Array.isArray(evaluationResult.words)
     ) {
       throw new Error('Invalid JSON structure returned by Gemini API');
     }

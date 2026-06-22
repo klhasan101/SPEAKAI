@@ -15,6 +15,7 @@ interface EvaluationResult {
   score: number;
   feedbackPositive: string;
   feedbackImprovement: string;
+  words: { word: string; status: 'correct' | 'mispronounced' | 'missing' }[];
 }
 
 export default function PracticeEnvironment() {
@@ -201,11 +202,17 @@ export default function PracticeEnvironment() {
     }
   };
 
-  // Call API for grading
+  // Call API for grading (P0 Fix: Enhanced error checks)
   const submitForEvaluation = async (audioBlob: Blob) => {
     if (!currentSentence) return;
+    setErrorMsg(null);
     
     try {
+      // Check offline status first
+      if (typeof window !== 'undefined' && !navigator.onLine) {
+        throw new Error('NETWORK_ERROR');
+      }
+
       const formData = new FormData();
       formData.append('audio', audioBlob, 'audio.webm');
       formData.append('text', currentSentence.text);
@@ -217,26 +224,58 @@ export default function PracticeEnvironment() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to analyze pronunciation.');
+        const errMsg = errData.error || '';
+        if (errMsg.includes('GEMINI_API_KEY') || res.status === 500) {
+          throw new Error('API_ERROR');
+        }
+        throw new Error(errMsg || 'UNKNOWN_ERROR');
       }
 
-      const result: EvaluationResult = await res.json();
-      setEvaluation(result);
+      let result: any;
+      try {
+        result = await res.json();
+      } catch {
+        throw new Error('INVALID_RESPONSE');
+      }
+
+      // Check structure (including V2 words array)
+      if (
+        typeof result.score !== 'number' ||
+        typeof result.feedbackPositive !== 'string' ||
+        typeof result.feedbackImprovement !== 'string' ||
+        !Array.isArray(result.words)
+      ) {
+        throw new Error('INVALID_RESPONSE');
+      }
+
+      const evalResult = result as EvaluationResult;
+      setEvaluation(evalResult);
       
       // Save attempt to IndexedDB Immediately for local-first durability
       await db.attempts.add({
         sentenceId: currentSentence.id,
         sentenceText: currentSentence.text,
-        score: result.score,
-        feedbackPositive: result.feedbackPositive,
-        feedbackImprovement: result.feedbackImprovement,
-        timestamp: Date.now()
+        score: evalResult.score,
+        feedbackPositive: evalResult.feedbackPositive,
+        feedbackImprovement: evalResult.feedbackImprovement,
+        timestamp: Date.now(),
+        words: evalResult.words
       });
 
       setAppState('FEEDBACK_READY');
     } catch (err: any) {
       console.error('API Evaluation failed:', err);
-      setErrorMsg(err?.message || 'Connection error. Please try again.');
+      let errorMsgStr = t('unknownError');
+      if (err.message === 'NETWORK_ERROR') {
+        errorMsgStr = t('networkError');
+      } else if (err.message === 'API_ERROR') {
+        errorMsgStr = t('apiError');
+      } else if (err.message === 'INVALID_RESPONSE') {
+        errorMsgStr = t('invalidResponse');
+      } else if (err.message && err.message !== 'UNKNOWN_ERROR') {
+        errorMsgStr = err.message;
+      }
+      setErrorMsg(errorMsgStr);
       setAppState('IDLE');
     }
   };
@@ -251,6 +290,42 @@ export default function PracticeEnvironment() {
       // Completed last sentence! Go to results
       router.push(`/result?start=${sessionStartTime}`);
     }
+  };
+
+  // Render focal prompt with word-level highlight coloring (P3 Task 8)
+  const renderFocalPrompt = () => {
+    if (!currentSentence) return null;
+
+    if (appState === 'FEEDBACK_READY' && evaluation && evaluation.words) {
+      return (
+        <div dir="ltr" className="flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-full px-4 select-none">
+          {evaluation.words.map((w, index) => {
+            let colorClass = 'text-foreground';
+            if (w.status === 'correct') {
+              colorClass = 'text-emerald-500 font-bold';
+            } else if (w.status === 'mispronounced') {
+              colorClass = 'text-amber-500 font-bold decoration-wavy underline decoration-2';
+            } else if (w.status === 'missing') {
+              colorClass = 'text-destructive font-bold line-through opacity-50';
+            }
+            return (
+              <span 
+                key={index} 
+                className={`text-3xl md:text-4xl tracking-tight transition-all duration-300 ${colorClass}`}
+              >
+                {w.word}
+              </span>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <span dir="ltr" className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-snug select-none block">
+        {currentSentence.text}
+      </span>
+    );
   };
 
   return (
@@ -282,11 +357,8 @@ export default function PracticeEnvironment() {
                 transition={{ duration: 0.3 }}
                 className="w-full text-center flex flex-col items-center gap-6"
               >
-                <div className="relative group p-2">
-                  {/* Keep American sentences displayed in LTR even in Arabic UI */}
-                  <span dir="ltr" className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-snug select-none block">
-                    {currentSentence.text}
-                  </span>
+                <div className="relative group p-2 w-full">
+                  {renderFocalPrompt()}
                 </div>
                 
                 {appState === 'PLAYING_PROMPT' && (
@@ -346,7 +418,7 @@ export default function PracticeEnvironment() {
                   <span>{t('voiceSpeed')}</span>
                   <span className="font-bold text-primary">{voiceSpeed.toFixed(1)}x</span>
                 </div>
-                <div className="flex gap-1" dir="ltr"> {/* Enforce speed selector LTR for layout consistency */}
+                <div className="flex gap-1" dir="ltr">
                   {[0.6, 0.8, 1.0, 1.2].map((speed) => (
                     <button
                       key={speed}

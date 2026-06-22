@@ -8,6 +8,7 @@ export interface Attempt {
   feedbackPositive: string;
   feedbackImprovement: string;
   timestamp: number;
+  words?: { word: string; status: 'correct' | 'mispronounced' | 'missing' }[];
 }
 
 class ShadowSpeakDB extends Dexie {

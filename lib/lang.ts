@@ -52,7 +52,11 @@ export const translations = {
     goBack: "Go back",
     shadowingPractice: "Shadowing Practice",
     acousticScore: "Acoustic Score",
-    accentAlignDetail: "General American accent alignment"
+    accentAlignDetail: "General American accent alignment",
+    networkError: "Connection error. Please check your internet connection.",
+    apiError: "API evaluation failed. Please verify API key configuration.",
+    invalidResponse: "Received an invalid grading response. Please try again.",
+    unknownError: "An unknown error occurred. Please try again."
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -105,6 +109,10 @@ export const translations = {
     goBack: "رجوع",
     shadowingPractice: "التدريب على المحاكاة",
     acousticScore: "درجة النطق",
-    accentAlignDetail: "التوافق مع اللهجة الأمريكية العامة"
+    accentAlignDetail: "التوافق مع اللهجة الأمريكية العامة",
+    networkError: "خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.",
+    apiError: "فشل تقييم واجهة برمجة التطبيقات. يرجى التحقق من إعداد مفتاح API الخاص بك.",
+    invalidResponse: "تم استلام استجابة غير صالحة من نظام التقييم. يرجى إعادة المحاولة.",
+    unknownError: "حدث خطأ غير معروف. يرجى المحاولة مرة أخرى."
   }
 };
