@@ -250,7 +250,7 @@ export default function HomeDashboard() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <Link href="/practice">
+                <Link href={`/practice?category=${cat.id}`}>
                   <div className="min-w-[90px] flex flex-col items-center gap-1.5 p-2 rounded-xl border border-border bg-card hover:bg-muted transition-all cursor-pointer">
                     <img
                       src={cat.image}

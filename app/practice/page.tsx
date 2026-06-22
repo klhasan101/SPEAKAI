@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Mic, Square, Loader2, Sparkles, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle, WifiOff, Wifi } from 'lucide-react';
 import Header from '@/components/Header';
@@ -25,8 +25,9 @@ interface EvaluationResult {
   words: { word: string; status: 'correct' | 'mispronounced' | 'missing' }[];
 }
 
-export default function PracticeEnvironment() {
+function PracticeEnvironmentContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { lang, t } = useLanguage();
   
   // V2 Setup Mode States
@@ -34,6 +35,21 @@ export default function PracticeEnvironment() {
   const [selectedCategory, setSelectedCategory] = useState<string>('daily-conversation');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('beginner');
   const [sessionMode, setSessionMode] = useState<'sentence' | 'paragraph'>('sentence');
+
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+    const difficultyParam = searchParams.get('difficulty');
+    if (difficultyParam) {
+      setSelectedDifficulty(difficultyParam);
+    }
+    const modeParam = searchParams.get('mode');
+    if (modeParam === 'sentence' || modeParam === 'paragraph') {
+      setSessionMode(modeParam);
+    }
+  }, [searchParams]);
   
   // V2 Task 4: AI content source mode state
   const [sourceMode, setSourceMode] = useState<'static' | 'ai'>('static');
@@ -1175,5 +1191,21 @@ export default function PracticeEnvironment() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function PracticeFallback() {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-background">
+      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+    </div>
+  );
+}
+
+export default function PracticeEnvironment() {
+  return (
+    <Suspense fallback={<PracticeFallback />}>
+      <PracticeEnvironmentContent />
+    </Suspense>
   );
 }
