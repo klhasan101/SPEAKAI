@@ -172,6 +172,31 @@ export default function HomeDashboard() {
           </Link>
         </motion.div>
 
+        {/* YouTube Shadowing Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08 }}
+        >
+          <Link href="/youtube">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex items-center gap-3.5 hover:bg-muted/40 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden">
+              <div className="absolute right-0 top-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-red-500/10 blur-xl pointer-events-none" />
+              <div className="p-2.5 bg-red-500/15 rounded-xl text-red-500 flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.15)]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.528 3.545 12 3.545 12 3.545s-7.528 0-9.388.51a3.004 3.004 0 0 0-2.11 2.108C0 8.022 0 12 0 12s0 3.978.502 5.837a3.003 3.003 0 0 0 2.11 2.108c1.86.51 9.388.51 9.388.51s7.528 0 9.388-.51a3.003 3.003 0 0 0 2.11-2.108C24 15.978 24 12 24 12s0-3.978-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-display text-sm font-extrabold text-foreground text-left">{t('youtubeTitle')}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate text-left">
+                  {t('youtubeDesc')}
+                </div>
+              </div>
+              <ChevronRight className={`w-3.5 h-3.5 text-muted-foreground ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            </div>
+          </Link>
+        </motion.div>
+
         {/* Progress Summary: Last 7 Days Activity Chart */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

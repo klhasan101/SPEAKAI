@@ -122,7 +122,24 @@ export const translations = {
     reviewCount: "{n} sentences due",
     reviewStart: "Start Review Session",
     lastScore: "Last Score",
-    reviewDue: "Due for Review"
+    reviewDue: "Due for Review",
+    // YouTube Shadowing strings
+    youtubeTitle: "YouTube Shadowing",
+    youtubeDesc: "Paste a YouTube link and practice with the speaker's voice.",
+    youtubeUrlPlaceholder: "Paste YouTube Video Link...",
+    importBtn: "Import & Start",
+    importing: "Importing video captions...",
+    youtubeSelectDifficulty: "Select Video Difficulty",
+    noVideos: "No imported YouTube videos yet. Paste a link above to start!",
+    importedVideos: "Your YouTube Practice Library",
+    sentencesCount: "{n} sentences",
+    completedSentences: "{completed}/{total} Completed",
+    averageScore: "Avg Score",
+    startShadowing: "Start Shadowing",
+    playReference: "Play Native Video Segment",
+    recordedUser: "Your Recording",
+    referenceVideo: "Reference Video",
+    videoDuration: "Duration: {n}s"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -245,6 +262,23 @@ export const translations = {
     reviewCount: "{n} جمل مستحقة",
     reviewStart: "ابدأ جلسة المراجعة",
     lastScore: "آخر درجة",
-    reviewDue: "مستحقة للمراجعة"
+    reviewDue: "مستحقة للمراجعة",
+    // YouTube Shadowing strings
+    youtubeTitle: "محاكاة يوتيوب",
+    youtubeDesc: "ألصق رابط فيديو يوتيوب وتدرب على النطق بصوت المتحدث الأصلي.",
+    youtubeUrlPlaceholder: "ألصق رابط فيديو يوتيوب هنا...",
+    importBtn: "استيراد وبدء",
+    importing: "جاري استيراد نصوص الفيديو...",
+    youtubeSelectDifficulty: "اختر مستوى صعوبة الفيديو",
+    noVideos: "لا توجد فيديوهات يوتيوب مستوردة بعد. ألصق رابطاً أعلاه للبدء!",
+    importedVideos: "مكتبة تدريبات يوتيوب الخاصة بك",
+    sentencesCount: "{n} جملة",
+    completedSentences: "اكتمل {completed}/{total}",
+    averageScore: "متوسط الدرجة",
+    startShadowing: "ابدأ المحاكاة",
+    playReference: "تشغيل مقطع الفيديو الأصلي",
+    recordedUser: "تسجيلك الصوتي",
+    referenceVideo: "الفيديو المرجعي",
+    videoDuration: "المدة: {n} ثانية"
   }
 };
