@@ -403,79 +403,80 @@ function ResultContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
       <Header title={t('sessionComplete')} />
 
-      <div className="flex-1 px-6 py-6 flex flex-col gap-6">
+      {/* Scrollable Summary Content */}
+      <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto min-h-0">
         
         {/* Confetti & Trophy Section */}
-        <div className="flex flex-col items-center text-center py-4">
+        <div className="flex flex-col items-center text-center py-2 flex-shrink-0">
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', duration: 0.5 }}
-            className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4"
+            className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3"
           >
-            <Award className="w-10 h-10" />
+            <Award className="w-8 h-8" />
           </motion.div>
-          <h1 className="text-2xl font-black text-foreground">{t('sessionComplete')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('sessionDesc')}</p>
+          <h1 className="text-xl font-black text-foreground">{t('sessionComplete')}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('sessionDesc')}</p>
         </div>
 
         {/* Aggregated Analytics Score & Streak */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2.5 flex-shrink-0">
           {/* Average Score */}
-          <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center text-center">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t('avgScoreLabel')}</span>
-            <span className="text-2xl font-extrabold text-foreground mt-1">
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col items-center justify-center text-center">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">{t('avgScoreLabel')}</span>
+            <span className="text-xl font-extrabold text-foreground mt-0.5">
               {avgScore !== null ? `${avgScore}%` : '—'}
             </span>
           </div>
 
           {/* Time spent */}
-          <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center text-center">
-            <div className="flex items-center gap-1 text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">
-              <Clock className="w-3.5 h-3.5" />
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col items-center justify-center text-center">
+            <div className="flex items-center gap-1 text-muted-foreground text-[9px] font-semibold uppercase tracking-wider">
+              <Clock className="w-3 h-3" />
               {t('time')}
             </div>
-            <span className="text-2xl font-extrabold text-foreground mt-1">{durationStr}</span>
+            <span className="text-xl font-extrabold text-foreground mt-0.5">{durationStr}</span>
           </div>
 
           {/* Streak */}
-          <div className="rounded-2xl border border-border bg-card p-4 flex flex-col items-center justify-center text-center">
-            <div className="flex items-center gap-1 text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">
-              <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col items-center justify-center text-center">
+            <div className="flex items-center gap-1 text-muted-foreground text-[9px] font-semibold uppercase tracking-wider">
+              <Flame className="w-3 h-3 text-amber-500 fill-amber-500" />
               {t('streak').split(' ')[0]}
             </div>
-            <span className="text-2xl font-extrabold text-foreground mt-1">
+            <span className="text-xl font-extrabold text-foreground mt-0.5">
               {streak ? `${streak.currentStreak}${t('day').slice(0, 1)}` : '—'}
             </span>
           </div>
         </div>
 
         {/* Contextual Motivational Banner */}
-        <div className={`p-5 rounded-3xl border ${motivation.color} flex flex-col gap-2`}>
-          <span className="text-sm font-extrabold tracking-tight">{motivation.tag}</span>
-          <p className="text-xs opacity-90 leading-relaxed">{motivation.desc}</p>
+        <div className={`p-4 rounded-2xl border ${motivation.color} flex flex-col gap-1.5 flex-shrink-0`}>
+          <span className="text-xs font-extrabold tracking-tight">{motivation.tag}</span>
+          <p className="text-[10px] opacity-90 leading-relaxed">{motivation.desc}</p>
         </div>
 
-        {/* V2 Task 9: Phoneme Weaknesses Summary Widget */}
+        {/* Phoneme Weaknesses Summary Widget */}
         {topWeaknesses.length > 0 && (
-          <div className="rounded-3xl border border-border bg-card p-5 flex flex-col gap-3 shadow-sm relative overflow-hidden">
-            <div className="absolute right-0 top-0 -mr-4 -mt-4 w-24 h-24 rounded-full bg-destructive/5 blur-xl pointer-events-none" />
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-destructive" />
-              <h3 className="text-sm font-extrabold text-foreground">{t('weaknessesTitle')}</h3>
+          <div className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-2 shadow-sm relative overflow-hidden flex-shrink-0">
+            <div className="absolute right-0 top-0 -mr-4 -mt-4 w-20 h-20 rounded-full bg-destructive/5 blur-lg pointer-events-none" />
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+              <h3 className="text-xs font-extrabold text-foreground">{t('weaknessesTitle')}</h3>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{t('weaknessesDesc')}</p>
-            <div className="flex flex-wrap gap-2 mt-1">
+            <p className="text-[10px] text-muted-foreground leading-normal">{t('weaknessesDesc')}</p>
+            <div className="flex flex-wrap gap-1.5 mt-0.5">
               {topWeaknesses.map((issue) => (
                 <span
                   key={issue.word}
-                  className="px-3.5 py-1.5 rounded-2xl bg-destructive/10 text-destructive text-xs font-bold flex items-center gap-1.5 border border-destructive/20"
+                  className="px-2.5 py-1 rounded-xl bg-destructive/10 text-destructive text-[11px] font-bold flex items-center gap-1 border border-destructive/20"
                 >
                   <span className="font-extrabold select-all">{issue.word}</span>
-                  <span className={`opacity-60 text-[10px] font-medium ${lang === 'ar' ? 'border-r pr-1.5 mr-1.5' : 'border-l pl-1.5 ml-1.5'} border-destructive/30`}>
+                  <span className={`opacity-60 text-[9px] font-medium ${lang === 'ar' ? 'border-r pr-1 mr-1' : 'border-l pl-1 ml-1'} border-destructive/30`}>
                     {t('timesMispronounced', { count: issue.count })}
                   </span>
                 </span>
@@ -484,15 +485,15 @@ function ResultContent() {
           </div>
         )}
 
-        {/* V2 Task 13: Local Achievements Widget */}
-        <div className="rounded-3xl border border-border bg-card p-5 flex flex-col gap-4 shadow-sm">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500 fill-amber-500/10" />
-            <h3 className="text-sm font-extrabold text-foreground">{t('achievementsTitle')}</h3>
+        {/* Local Achievements Widget */}
+        <div className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 shadow-sm">
+          <div className="flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5 text-amber-500 fill-amber-500/10" />
+            <h3 className="text-xs font-extrabold text-foreground">{t('achievementsTitle')}</h3>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">{t('achievementsDesc')}</p>
+          <p className="text-[10px] text-muted-foreground leading-normal">{t('achievementsDesc')}</p>
           
-          <div className="flex flex-col gap-2.5 mt-1">
+          <div className="flex flex-col gap-2 mt-0.5">
             {['first_step', 'perfect_pitch', 'super_shadow', 'persistence', 'fluent_focus'].map((id) => {
               const staticMeta = {
                 first_step: {
@@ -533,25 +534,25 @@ function ResultContent() {
               return (
                 <div
                   key={id}
-                  className={`flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300 ${
+                  className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all duration-300 ${
                     unlocked
                       ? `${staticMeta.color} opacity-100`
                       : 'bg-card border-border/40 opacity-40 grayscale'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl bg-background/50 border border-current flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-4 h-4 fill-current" />
+                  <div className={`p-1.5 rounded-lg bg-background/50 border border-current flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-3.5 h-3.5 fill-current" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <h4 className={`text-xs font-bold text-foreground flex items-center gap-1.5 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                    <h4 className={`text-[11px] font-bold text-foreground flex items-center gap-1 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                       {staticMeta.title}
                       {unlocked && (
-                        <span className="text-[8px] px-1 rounded-full bg-emerald-500/15 text-emerald-500 font-extrabold uppercase">
+                        <span className="text-[7px] px-1 rounded-full bg-emerald-500/15 text-emerald-500 font-extrabold uppercase">
                           {lang === 'ar' ? 'مفتوح' : 'Unlocked'}
                         </span>
                       )}
                     </h4>
-                    <p className={`text-[10px] text-muted-foreground mt-0.5 leading-normal truncate ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-[9px] text-muted-foreground mt-0.5 leading-normal truncate ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
                       {staticMeta.desc}
                     </p>
                   </div>
@@ -563,8 +564,8 @@ function ResultContent() {
 
         {/* Practice Attempts Breakdown */}
         {attempts.length > 0 && (
-          <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-bold text-foreground px-1">{t('sessionLog')} ({attempts.length})</h2>
+          <div className="flex flex-col gap-2.5">
+            <h2 className="text-xs font-bold text-foreground px-1">{t('sessionLog')} ({attempts.length})</h2>
             
             <div className="flex flex-col gap-2">
               {attempts.map((att, index) => {
@@ -572,14 +573,14 @@ function ResultContent() {
                 return (
                   <div
                     key={att.id || index}
-                    className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-200"
+                    className="rounded-xl border border-border bg-card overflow-hidden transition-all duration-200"
                   >
                     <button
                       onClick={() => setExpandedIndex(isExpanded ? null : index)}
-                      className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-muted/50 transition-colors"
+                      className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-muted/50 transition-colors cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 pr-2">
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                      <div className="flex items-center gap-2.5 pr-2">
+                        <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${
                           att.score >= 85
                             ? 'bg-emerald-500/10 text-emerald-500'
                             : att.score >= 70
@@ -588,30 +589,30 @@ function ResultContent() {
                         }`}>
                           {att.score}
                         </span>
-                        <p dir="ltr" className="text-sm font-medium text-foreground truncate max-w-[200px] md:max-w-[240px]">
+                        <p dir="ltr" className="text-xs font-medium text-foreground truncate max-w-[180px] md:max-w-[220px]">
                           {att.sentenceText}
                         </p>
                       </div>
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <ChevronUp className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       )}
                     </button>
 
                     {isExpanded && (
-                      <div className="px-4 pb-4 pt-1 border-t border-border bg-muted/20 flex flex-col gap-2 text-xs">
-                        <div className="flex items-start gap-2">
+                      <div className="px-3 pb-3 pt-1 border-t border-border bg-muted/20 flex flex-col gap-2 text-[11px]">
+                        <div className="flex items-start gap-1.5">
                           <span className="text-emerald-500 select-none">🟢</span>
                           <p className="text-foreground font-medium">
-                            <strong className="text-emerald-500 font-bold block text-[10px] uppercase tracking-wide">{t('praiseLabel')}</strong>
+                            <strong className="text-emerald-500 font-bold block text-[9px] uppercase tracking-wide">{t('praiseLabel')}</strong>
                             {att.feedbackPositive}
                           </p>
                         </div>
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-1.5">
                           <span className="text-blue-500 select-none">🔵</span>
                           <p className="text-foreground font-medium">
-                            <strong className="text-blue-500 font-bold block text-[10px] uppercase tracking-wide">{t('correctionLabel')}</strong>
+                            <strong className="text-blue-500 font-bold block text-[9px] uppercase tracking-wide">{t('correctionLabel')}</strong>
                             {att.feedbackImprovement}
                           </p>
                         </div>
@@ -623,16 +624,14 @@ function ResultContent() {
             </div>
           </div>
         )}
-
-        <div className="flex-1 min-h-[4rem]" />
       </div>
 
-      {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 bg-background/90 backdrop-blur-md border-t border-border px-6 py-4 flex flex-col gap-3 mt-auto">
+      {/* Pinned Bottom Actions (Footer) */}
+      <div className="flex-shrink-0 bg-background border-t border-border px-4 py-3 flex flex-col gap-2.5">
         <button
           onClick={generateShareCard}
           disabled={isGeneratingCard}
-          className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
+          className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-2xl flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md cursor-pointer text-sm"
         >
           {isGeneratingCard ? (
             <>
@@ -647,15 +646,15 @@ function ResultContent() {
           )}
         </button>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <Link href="/">
-            <button className="w-full py-3.5 border border-border bg-card text-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:bg-muted active:scale-[0.98] transition-all">
+            <button className="w-full py-2.5 border border-border bg-card text-foreground font-semibold rounded-2xl flex items-center justify-center gap-1.5 hover:bg-muted active:scale-[0.98] transition-all cursor-pointer text-sm">
               <Home className="w-4 h-4" />
               {t('home')}
             </button>
           </Link>
           <Link href="/practice">
-            <button className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
+            <button className="w-full py-2.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all shadow-md cursor-pointer text-sm">
               <RotateCcw className="w-4 h-4" />
               {t('restart')}
             </button>

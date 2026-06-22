@@ -71,7 +71,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between">
+      <header className="w-full bg-background/80 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {showBackButton && (
             <button

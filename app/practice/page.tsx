@@ -14,6 +14,7 @@ import {
   startOfflineRecording,
   type OfflineEvaluationResult,
 } from '@/lib/offline-evaluator';
+import { recordAttempt } from '@/lib/spaced-repetition';
 
 type AppState = 'IDLE' | 'PLAYING_PROMPT' | 'RECORDING' | 'ANALYZING' | 'FEEDBACK_READY';
 
@@ -311,6 +312,12 @@ export default function PracticeEnvironment() {
             words: result.words,
           });
           setAppState('FEEDBACK_READY');
+          // Record attempt for spaced repetition
+          try {
+            await recordAttempt(currentSentence.id, result.score);
+          } catch (e) {
+            console.warn('Spaced repetition record failed (offline):', e);
+          }
         },
         (errKey) => {
           setErrorMsg(t(errKey as any));
@@ -499,6 +506,12 @@ export default function PracticeEnvironment() {
       }
 
       setAppState('FEEDBACK_READY');
+      // Record attempt for spaced repetition
+      try {
+        await recordAttempt(currentSentence.id, evalResult.score);
+      } catch (e) {
+        console.warn('Spaced repetition record failed (online):', e);
+      }
     } catch (err: any) {
       console.error('API Evaluation failed:', err);
       let errorMsgStr = t('unknownError');
@@ -662,6 +675,15 @@ export default function PracticeEnvironment() {
     { id: 'movies', label: t('cat_movies') }
   ];
 
+  // Category image map for visual context
+  const categoryImages: Record<string, string> = {
+    'daily-conversation': '/images/categories/daily_conversation.png',
+    'business': '/images/categories/business.png',
+    'travel': '/images/categories/travel.png',
+    'news': '/images/categories/news.png',
+    'movies': '/images/categories/movies.png',
+  };
+
   // Difficulties list
   const difficulties = [
     { id: 'beginner', label: t('diff_beginner') },
@@ -675,12 +697,12 @@ export default function PracticeEnvironment() {
 
       {isSetupActive ? (
         /* V2 Setup UI */
-        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10 overflow-y-auto">
-          <div className="space-y-6">
-            
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* Scrollable selectors */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 min-h-0">
             {/* Session Mode Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                 <PlayCircle className="w-4 h-4 text-primary" />
                 <span>{t('selectSessionMode')}</span>
               </div>
@@ -688,33 +710,33 @@ export default function PracticeEnvironment() {
                 <button
                   type="button"
                   onClick={() => setSessionMode('sentence')}
-                  className={`py-3 px-4 rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
+                  className={`py-2 px-3 rounded-xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                     sessionMode === 'sentence'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
-                  <span className="text-sm font-bold">{t('modeSentence')}</span>
-                  <span className="text-[9px] leading-tight opacity-90 font-normal">{t('sessionModeSentenceDesc')}</span>
+                  <span className="text-xs font-bold">{t('modeSentence')}</span>
+                  <span className="text-[8px] leading-tight opacity-90 font-normal">{t('sessionModeSentenceDesc')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setSessionMode('paragraph')}
-                  className={`py-3 px-4 rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
+                  className={`py-2 px-3 rounded-xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                     sessionMode === 'paragraph'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
-                  <span className="text-sm font-bold">{t('modeParagraph')}</span>
-                  <span className="text-[9px] leading-tight opacity-90 font-normal">{t('sessionModeParagraphDesc')}</span>
+                  <span className="text-xs font-bold">{t('modeParagraph')}</span>
+                  <span className="text-[8px] leading-tight opacity-90 font-normal">{t('sessionModeParagraphDesc')}</span>
                 </button>
               </div>
             </div>
 
             {/* Category Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                 <Layers className="w-4 h-4 text-primary" />
                 <span>{t('selectCategory')}</span>
               </div>
@@ -723,9 +745,9 @@ export default function PracticeEnvironment() {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                       selectedCategory === cat.id
-                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                         : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                   >
@@ -737,7 +759,7 @@ export default function PracticeEnvironment() {
 
             {/* Difficulty Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                 <Sliders className="w-4 h-4 text-primary" />
                 <span>{t('selectDifficulty')}</span>
               </div>
@@ -746,9 +768,9 @@ export default function PracticeEnvironment() {
                   <button
                     key={diff.id}
                     onClick={() => setSelectedDifficulty(diff.id)}
-                    className={`py-3.5 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                       selectedDifficulty === diff.id
-                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                         : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                   >
@@ -758,9 +780,9 @@ export default function PracticeEnvironment() {
               </div>
             </div>
 
-            {/* Source Mode Selector (V2 Task 4) */}
+            {/* Source Mode Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                 <Sparkles className="w-4 h-4 text-primary" />
                 <span>{t('selectSourceMode')}</span>
               </div>
@@ -768,9 +790,9 @@ export default function PracticeEnvironment() {
                 <button
                   type="button"
                   onClick={() => setSourceMode('static')}
-                  className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                  className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                     sourceMode === 'static'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -779,9 +801,9 @@ export default function PracticeEnvironment() {
                 <button
                   type="button"
                   onClick={() => setSourceMode('ai')}
-                  className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                  className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                     sourceMode === 'ai'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -791,52 +813,55 @@ export default function PracticeEnvironment() {
             </div>
 
             {errorMsg && (
-              <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
+              <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
           </div>
 
-          <button
-            onClick={handleStartPractice}
-            disabled={isGenerating}
-            className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md disabled:opacity-75"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t('generatingAI')}
-              </>
-            ) : (
-              <>
-                {t('startPracticeBtn')}
-                <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
-              </>
-            )}
-          </button>
+          {/* Fixed bottom button */}
+          <div className="flex-shrink-0 bg-background border-t border-border px-4 py-3 flex flex-col">
+            <button
+              onClick={handleStartPractice}
+              disabled={isGenerating}
+              className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md disabled:opacity-75 cursor-pointer"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {t('generatingAI')}
+                </>
+              ) : (
+                <>
+                  {t('startPracticeBtn')}
+                  <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+                </>
+              )}
+            </button>
+          </div>
         </div>
       ) : (
         /* Active Practice UI */
-        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10">
+        <div className="flex-1 px-4 py-3.5 flex flex-col justify-between min-h-0 overflow-hidden bg-background relative z-10 gap-3">
           
           {/* Progress Tracker */}
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+          <div className="flex items-center justify-between border-b border-border pb-3 flex-shrink-0">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
               {t('progress')}
             </span>
             <div className="flex items-center gap-2">
               {/* Connectivity badge */}
-              <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              <span className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full ${
                 isOnline
                   ? 'bg-emerald-500/10 text-emerald-500'
                   : 'bg-amber-500/10 text-amber-600'
               }`}>
                 {isOnline
-                  ? <><Wifi className="w-3 h-3" />{t('onlineBadge')}</>
-                  : <><WifiOff className="w-3 h-3" />{t('offlineBadge')}</>}
+                  ? <><Wifi className="w-2.5 h-2.5" />{t('onlineBadge')}</>
+                  : <><WifiOff className="w-2.5 h-2.5" />{t('offlineBadge')}</>}
               </span>
-              <span className="text-sm font-bold text-primary">
+              <span className="text-xs font-bold text-primary">
                 {t('sentenceOf', { x: currentIndex + 1, y: sentences.length })}
               </span>
             </div>
@@ -848,94 +873,101 @@ export default function PracticeEnvironment() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2"
+              className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] flex items-start gap-1.5 flex-shrink-0"
             >
-              <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <WifiOff className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
               <span>{t('offlineNotice')}</span>
             </motion.div>
           )}
 
           {/* Focal Prompt Card */}
-          <div className="flex-1 flex flex-col items-center justify-center py-8">
-            <AnimatePresence mode="wait">
-              {currentSentence ? (
-                <motion.div
-                  key={currentSentence.id}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full text-center flex flex-col items-center gap-6"
-                >
-                  <div className="relative group p-2 w-full">
-                    {renderFocalPrompt()}
+          {appState !== 'ANALYZING' && (
+            <div className="flex-1 flex flex-col items-center justify-center min-h-0 py-1">
+              <AnimatePresence mode="wait">
+                {currentSentence ? (
+                  <motion.div
+                    key={currentSentence.id}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full text-center flex flex-col items-center justify-center gap-4 bg-card border border-border rounded-3xl p-5 shadow-sm max-h-full overflow-y-auto relative"
+                  >
+                    {/* Category Context Image */}
+                    {currentSentence?.category && categoryImages[currentSentence.category] && (
+                      <img
+                        src={categoryImages[currentSentence.category]}
+                        alt={currentSentence.category}
+                        className="w-12 h-12 rounded-xl object-cover opacity-90 shadow-sm mx-auto flex-shrink-0"
+                      />
+                    )}
+                    <div className="relative group p-1 w-full max-h-[160px] overflow-y-auto scrollbar-none">
+                      {renderFocalPrompt()}
+                    </div>
+                    
+                    {appState === 'PLAYING_PROMPT' && (
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse flex-shrink-0">
+                        {t('playingPrompt')}
+                      </span>
+                    )}
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                    <span className="text-xs text-muted-foreground">{t('preparing')}</span>
                   </div>
-                  
-                  {appState === 'PLAYING_PROMPT' && (
-                    <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">
-                      {t('playingPrompt')}
-                    </span>
-                  )}
-                </motion.div>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  <span className="text-sm text-muted-foreground">{t('preparing')}</span>
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Error notification banner */}
           {errorMsg && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-start gap-3"
+              className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start gap-2 flex-shrink-0"
             >
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold">{t('errorTitle')}</p>
-                <p className="text-xs opacity-90 mt-0.5">{errorMsg}</p>
+                <p className="font-semibold text-[11px]">{t('errorTitle')}</p>
+                <p className="opacity-90 mt-0.5 leading-tight">{errorMsg}</p>
               </div>
-              <button onClick={() => setErrorMsg(null)} className="p-0.5 hover:bg-destructive/10 rounded-full">
-                <X className="w-4 h-4" />
+              <button onClick={() => setErrorMsg(null)} className="p-0.5 hover:bg-destructive/10 rounded-full cursor-pointer">
+                <X className="w-3.5 h-3.5" />
               </button>
             </motion.div>
           )}
 
           {/* Apple-style loading shimmer during analysis */}
           {appState === 'ANALYZING' && (
-            <div className="w-full bg-card border border-border rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-pulse">
-              <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+            <div className="flex-1 flex flex-col items-center justify-center p-6 border border-border bg-card rounded-3xl gap-4 animate-pulse">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <div className="text-center space-y-1">
                 <span className="text-sm font-semibold text-foreground">
                   {isOnline ? t('analyzingAcoustics') : t('offlineAnalyzing')}
                 </span>
-              </div>
-              <div className="space-y-2">
-                <div className="h-4 bg-muted rounded-full w-full animate-shimmer" />
-                <div className="h-4 bg-muted rounded-full w-5/6 animate-shimmer" />
+                <p className="text-[10px] text-muted-foreground">Please wait while we evaluate your pronunciation</p>
               </div>
             </div>
           )}
 
           {/* Control Hub (Sticky Bottom Area) */}
-          <div className="w-full flex flex-col gap-4 pt-4 border-t border-border">
+          <div className="flex-shrink-0 w-full flex flex-col gap-3 pt-3 border-t border-border bg-background">
             {appState !== 'ANALYZING' && appState !== 'FEEDBACK_READY' && (
               <>
                 {/* Voice Speed Controls */}
-                <div className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-card shadow-sm">
-                  <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground">
+                <div className="flex flex-col gap-1.5 p-2.5 rounded-xl border border-border bg-card shadow-sm">
+                  <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground">
                     <span>{t('voiceSpeed')}</span>
-                    <span className="font-bold text-primary">{voiceSpeed.toFixed(1)}x</span>
+                    <span className="text-primary">{voiceSpeed.toFixed(1)}x</span>
                   </div>
                   <div className="flex gap-1" dir="ltr">
                     {[0.6, 0.8, 1.0, 1.2].map((speed) => (
                       <button
                         key={speed}
                         onClick={() => setVoiceSpeed(speed)}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition-all duration-200 ${
+                        className={`flex-1 py-1 text-[11px] font-bold rounded-lg border transition-all duration-200 cursor-pointer ${
                           voiceSpeed === speed
                             ? 'bg-primary border-primary text-primary-foreground shadow-sm'
                             : 'bg-card border-border hover:bg-muted text-foreground'
@@ -948,14 +980,14 @@ export default function PracticeEnvironment() {
                 </div>
 
                 {/* Action Buttons Row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Listen CTA */}
                   <button
                     onClick={playPrompt}
                     disabled={appState === 'PLAYING_PROMPT' || !currentSentence}
-                    className="py-4 rounded-2xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-2 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50"
+                    className="py-3 rounded-xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-1.5 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer text-sm"
                   >
-                    <Volume2 className="w-5 h-5 text-primary" />
+                    <Volume2 className="w-4 h-4 text-primary" />
                     {t('listen')}
                   </button>
 
@@ -963,18 +995,18 @@ export default function PracticeEnvironment() {
                   {appState === 'RECORDING' ? (
                     <button
                       onClick={stopRecording}
-                      className="py-4 rounded-2xl bg-foreground text-background font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden"
+                      className="py-3 rounded-xl bg-foreground text-background font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden cursor-pointer text-sm"
                     >
-                      <Square className="w-5 h-5 fill-current text-destructive animate-pulse" />
+                      <Square className="w-4 h-4 fill-current text-destructive animate-pulse" />
                       {t('stop')} ({15 - recordingDuration}s)
                     </button>
                   ) : (
                     <button
                       onClick={startRecording}
                       disabled={!currentSentence}
-                      className="py-4 rounded-2xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
+                      className="py-3 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md cursor-pointer text-sm"
                     >
-                      <Mic className="w-5 h-5 fill-current" />
+                      <Mic className="w-4 h-4 fill-current" />
                       {t('record')}
                     </button>
                   )}
@@ -994,7 +1026,7 @@ export default function PracticeEnvironment() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black z-40"
+              className="fixed inset-0 bg-black z-45"
               onClick={handleNext}
             />
             
@@ -1004,49 +1036,49 @@ export default function PracticeEnvironment() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[32px] p-6 z-50 flex flex-col gap-5 shadow-2xl max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card border-t border-border rounded-t-[28px] p-5 z-50 flex flex-col gap-4 shadow-2xl max-h-[82vh] overflow-y-auto"
             >
               {/* Top notch indicator */}
-              <div className="w-12 h-1 bg-border rounded-full mx-auto" />
+              <div className="w-10 h-1 bg-border rounded-full mx-auto" />
 
-              <div className="flex flex-col items-center text-center gap-4">
+              <div className="flex flex-col items-center text-center gap-3">
                 {/* Score Indicator Badge */}
-                <div className="relative flex items-center justify-center w-24 h-24">
-                  <svg className="w-full h-full transform -rotate-95">
+                <div className="relative flex items-center justify-center w-20 h-20">
+                  <svg className="w-full h-full transform -rotate-90">
                     <circle
-                      cx="48"
-                      cy="48"
-                      r="40"
+                      cx="40"
+                      cy="40"
+                      r="32"
                       stroke="var(--border)"
-                      strokeWidth="6"
+                      strokeWidth="5"
                       fill="transparent"
                       className="opacity-20"
                     />
                     <motion.circle
-                      cx="48"
-                      cy="48"
-                      r="40"
+                      cx="40"
+                      cy="40"
+                      r="32"
                       stroke={evaluation.score >= 85 ? '#22c55e' : evaluation.score >= 70 ? '#eab308' : '#3b82f6'}
-                      strokeWidth="6"
+                      strokeWidth="5"
                       fill="transparent"
-                      strokeDasharray={251.2}
-                      initial={{ strokeDashoffset: 251.2 }}
-                      animate={{ strokeDashoffset: 251.2 - (251.2 * evaluation.score) / 100 }}
+                      strokeDasharray={201}
+                      initial={{ strokeDashoffset: 201 }}
+                      animate={{ strokeDashoffset: 201 - (201 * evaluation.score) / 100 }}
                       transition={{ duration: 1, ease: 'easeOut' }}
                     />
                   </svg>
-                  <span className="absolute text-2xl font-black text-foreground">
+                  <span className="absolute text-xl font-black text-foreground">
                     {evaluation.score}
                   </span>
                 </div>
 
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-foreground">
+                <div className="space-y-0.5">
+                  <h3 className="text-base font-bold text-foreground">
                     {(evaluation as any).isOffline
                       ? t('offlineResultLabel')
                       : t('acousticScore')}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     {(evaluation as any).isOffline
                       ? <span className="flex items-center justify-center gap-1"><WifiOff className="w-3 h-3" />{t('offlineBadge')}</span>
                       : t('accentAlignDetail')}
@@ -1054,45 +1086,45 @@ export default function PracticeEnvironment() {
                 </div>
               </div>
 
-              {/* V2 Task 7: A/B Audio Comparison Controls */}
-              <div className="grid grid-cols-2 gap-3 p-1 border-y border-border py-3">
+              {/* A/B Audio Comparison Controls */}
+              <div className="grid grid-cols-2 gap-2 border-y border-border py-2.5">
                 <button
                   onClick={playOriginalComparison}
-                  className="py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold flex items-center justify-center gap-2 text-foreground active:scale-[0.97] transition-all"
+                  className="py-2 rounded-xl border border-border bg-card hover:bg-muted text-[11px] font-bold flex items-center justify-center gap-1.5 text-foreground active:scale-[0.97] transition-all cursor-pointer"
                 >
-                  <Volume2 className="w-4 h-4 text-primary" />
-                  {lang === 'ar' ? '🔊 الأصلي' : '🔊 Original'}
+                  <Volume2 className="w-3.5 h-3.5 text-primary" />
+                  {lang === 'ar' ? 'الأصلي' : 'Original'}
                 </button>
                 <button
                   onClick={playUserComparison}
                   disabled={!userAudioBlob}
-                  className="py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold flex items-center justify-center gap-2 text-foreground active:scale-[0.97] transition-all disabled:opacity-40"
+                  className="py-2 rounded-xl border border-border bg-card hover:bg-muted text-[11px] font-bold flex items-center justify-center gap-1.5 text-foreground active:scale-[0.97] transition-all disabled:opacity-40 cursor-pointer"
                 >
-                  <Mic className="w-4 h-4 text-primary" />
-                  {lang === 'ar' ? '🎤 صوتك' : '🎤 Your Voice'}
+                  <Mic className="w-3.5 h-3.5 text-primary" />
+                  {lang === 'ar' ? 'صوتك' : 'Your Voice'}
                 </button>
               </div>
 
               {/* Feedback Points */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {!!(evaluation as any).isOffline && (
-                  <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] flex items-start gap-1.5">
                     <WifiOff className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                     <span>{t('offlineResultNote')}</span>
                   </div>
                 )}
-                <div className="p-4 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 flex gap-3 text-sm">
+                <div className="p-3.5 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 flex gap-2.5 text-xs">
                   <span className="text-emerald-500 font-semibold select-none flex-shrink-0 mt-0.5">🟢</span>
-                  <p className="text-foreground leading-relaxed">
-                    <strong className="text-emerald-500 font-bold block text-xs uppercase tracking-wider mb-0.5">{t('praiseLabel')}</strong>
+                  <p className="text-foreground leading-normal">
+                    <strong className="text-emerald-500 font-bold block text-[10px] uppercase tracking-wider mb-0.5">{t('praiseLabel')}</strong>
                     {evaluation.feedbackPositive}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 flex gap-3 text-sm">
+                <div className="p-3.5 rounded-xl bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 flex gap-2.5 text-xs">
                   <span className="text-blue-500 font-semibold select-none flex-shrink-0 mt-0.5">🔵</span>
-                  <p className="text-foreground leading-relaxed">
-                    <strong className="text-blue-500 font-bold block text-xs uppercase tracking-wider mb-0.5">{t('correctionLabel')}</strong>
+                  <p className="text-foreground leading-normal">
+                    <strong className="text-blue-500 font-bold block text-[10px] uppercase tracking-wider mb-0.5">{t('correctionLabel')}</strong>
                     {evaluation.feedbackImprovement}
                   </p>
                 </div>
@@ -1101,7 +1133,7 @@ export default function PracticeEnvironment() {
               {/* Next CTA */}
               <button
                 onClick={handleNext}
-                className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md mt-2"
+                className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all shadow-md mt-1 cursor-pointer text-sm"
               >
                 {currentIndex < sentences.length - 1 ? t('nextSentence') : t('finishSession')}
                 <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />

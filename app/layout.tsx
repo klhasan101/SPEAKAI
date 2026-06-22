@@ -42,8 +42,8 @@ export default function RootLayout({
       <body className="min-h-full bg-neutral-950 flex flex-col items-center justify-start">
         <Providers>
           {/* Strict Layout Boundary: Mobile Container Wrapper */}
-          <div className="w-full max-w-md min-h-screen bg-background border-x border-border shadow-2xl flex flex-col relative">
-            <main className="flex-1 flex flex-col overflow-y-auto pb-6">
+          <div className="w-full max-w-md h-screen h-[100dvh] bg-background border-x border-border shadow-2xl flex flex-col relative overflow-hidden">
+            <main className="flex-1 flex flex-col min-h-0 relative overflow-hidden">
               {children}
             </main>
           </div>

@@ -23,6 +23,14 @@ export interface PhonemeIssue {
   lastSeen: number;
 }
 
+export interface SentenceProgress {
+  sentenceId: string;   // primary key
+  lastScore: number;    // 0-100
+  nextReview: number;   // timestamp (ms) when due
+  interval: number;     // days until next review
+  repetitions: number;  // number of times reviewed
+}
+
 export interface Achievement {
   id: string; // unique ID, e.g. 'first_step', 'perfect_pitch', 'super_shadow', 'persistence', 'fluent_focus'
   titleEn: string;
@@ -37,6 +45,7 @@ class ShadowSpeakDB extends Dexie {
   ttsCache!: Table<TTSCacheEntry>;
   phonemeIssues!: Table<PhonemeIssue>;
   achievements!: Table<Achievement>;
+  sentenceProgress!: Table<SentenceProgress>;
 
   constructor() {
     super('ShadowSpeakDB');
@@ -45,6 +54,13 @@ class ShadowSpeakDB extends Dexie {
       ttsCache: 'text',
       phonemeIssues: 'word, count, lastSeen',
       achievements: 'id, unlockedAt'
+    });
+    this.version(5).stores({
+      attempts: '++id, sentenceId, score, timestamp',
+      ttsCache: 'text',
+      phonemeIssues: 'word, count, lastSeen',
+      achievements: 'id, unlockedAt',
+      sentenceProgress: 'sentenceId, nextReview'
     });
   }
 }

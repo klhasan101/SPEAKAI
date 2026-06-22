@@ -113,7 +113,16 @@ export const translations = {
     offlineAnalyzing: "Analysing locally...",
     offlineResultLabel: "Local Analysis",
     offlineResultNote: "This is a simplified offline evaluation based on speech recognition. Connect to the internet for full Gemini AI scoring.",
-    onlineBadge: "Online"
+    onlineBadge: "Online",
+    // Practice Categories
+    categoriesTitle: "Practice Categories",
+    // Spaced Repetition (Feature 2)
+    reviewTitle: "Review Due Today",
+    reviewEmpty: "You're all caught up! No sentences due for review.",
+    reviewCount: "{n} sentences due",
+    reviewStart: "Start Review Session",
+    lastScore: "Last Score",
+    reviewDue: "Due for Review"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -227,6 +236,15 @@ export const translations = {
     offlineAnalyzing: "جاري التحليل محلياً...",
     offlineResultLabel: "تحليل محلي",
     offlineResultNote: "هذا تقييم مبسّط بلا إنترنت يعتمد على التعرف على الكلام. اتصل بالإنترنت للحصول على درجة Gemini AI الكاملة.",
-    onlineBadge: "متصل"
+    onlineBadge: "متصل",
+    // Practice Categories
+    categoriesTitle: "تصنيفات التدريب",
+    // Spaced Repetition (Feature 2)
+    reviewTitle: "المراجعة المستحقة اليوم",
+    reviewEmpty: "ممتاز! لا توجد جمل مستحقة للمراجعة اليوم.",
+    reviewCount: "{n} جمل مستحقة",
+    reviewStart: "ابدأ جلسة المراجعة",
+    lastScore: "آخر درجة",
+    reviewDue: "مستحقة للمراجعة"
   }
 };

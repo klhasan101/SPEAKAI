@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Play, Flame, Award, ChevronRight, BarChart2 } from 'lucide-react';
+import { Play, Flame, Award, ChevronRight, BarChart2, BookOpen } from 'lucide-react';
 import Header from '@/components/Header';
 import { checkStreakValidity, Streak } from '@/lib/streak';
 import { db } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
+import { getDueTodayCount } from '@/lib/spaced-repetition';
 
 interface ChartDay {
   name: string;
@@ -21,6 +22,7 @@ export default function HomeDashboard() {
   const [last7Days, setLast7Days] = useState<ChartDay[]>([]);
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [averageScore, setAverageScore] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     // 1. Verify and update streak on load
@@ -69,6 +71,14 @@ export default function HomeDashboard() {
       } catch (error) {
         console.error('Failed to load database history:', error);
       }
+
+      // Load review due count
+      try {
+        const count = await getDueTodayCount();
+        setReviewCount(count);
+      } catch (e) {
+        console.error('Failed to load review count:', e);
+      }
     }
 
     loadHistory();
@@ -77,99 +87,129 @@ export default function HomeDashboard() {
   const maxCount = Math.max(...last7Days.map((d) => d.count), 1);
 
   return (
-    <div className="flex-1 flex flex-col bg-background">
+    <div className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
       <Header />
 
-      <div className="flex-1 px-6 py-6 flex flex-col gap-6">
+      {/* Scrollable Dashboard Body */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
         {/* Welcome Section */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('welcome')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t('ready')}</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t('welcome')}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('ready')}</p>
         </div>
 
         {/* Streak Widget: Flame display */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 flex items-center justify-between shadow-sm"
+          transition={{ duration: 0.35 }}
+          className="relative overflow-hidden rounded-2xl border border-border bg-card p-4 flex items-center justify-between shadow-sm"
         >
           {/* Background glowing circle for aesthetic depth */}
-          <div className="absolute right-0 top-0 -mr-6 -mt-6 w-32 h-32 rounded-full bg-amber-500/10 blur-2xl dark:bg-amber-500/5 pointer-events-none" />
+          <div className="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-amber-500/10 blur-xl dark:bg-amber-500/5 pointer-events-none" />
           
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 rounded-2xl text-amber-500 flex items-center justify-center shadow-inner">
-              <Flame className="w-8 h-8 fill-amber-500 animate-bounce" />
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl text-amber-500 flex items-center justify-center">
+              <Flame className="w-6 h-6 fill-amber-500 animate-pulse" />
             </div>
             <div>
-              <div className="text-2xl font-bold tracking-tight">
+              <div className="text-lg font-bold tracking-tight">
                 {streak.currentStreak} {streak.currentStreak === 1 ? t('day') : t('days')}
               </div>
-              <div className="text-xs text-muted-foreground mt-0.5">{t('streak')}</div>
+              <div className="text-[10px] text-muted-foreground">{t('streak')}</div>
             </div>
           </div>
           
-          <div className={`text-right ${lang === 'ar' ? 'border-r pr-4' : 'border-l pl-4'} border-border`}>
-            <div className="text-sm font-semibold text-foreground">{streak.longestStreak} {t('days')}</div>
-            <div className="text-xs text-muted-foreground">{t('longest')}</div>
+          <div className={`text-right ${lang === 'ar' ? 'border-r pr-3' : 'border-l pl-3'} border-border`}>
+            <div className="text-xs font-semibold text-foreground">{streak.longestStreak} {t('days')}</div>
+            <div className="text-[10px] text-muted-foreground">{t('longest')}</div>
           </div>
         </motion.div>
 
         {/* Analytics Summary Row */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="text-xs text-muted-foreground font-medium">{t('totalShadowings')}</div>
-            <div className="text-xl font-bold text-foreground mt-1">{totalAttempts}</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center">
+            <div className="text-[10px] text-muted-foreground font-medium">{t('totalShadowings')}</div>
+            <div className="text-lg font-bold text-foreground mt-0.5">{totalAttempts}</div>
           </div>
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="text-xs text-muted-foreground font-medium">{t('avgScore')}</div>
-            <div className="text-xl font-bold text-foreground mt-1">
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center">
+            <div className="text-[10px] text-muted-foreground font-medium">{t('avgScore')}</div>
+            <div className="text-lg font-bold text-foreground mt-0.5">
               {averageScore !== null ? `${averageScore}%` : '—'}
             </div>
           </div>
         </div>
 
+        {/* Spaced Repetition: Review Due Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.05 }}
+        >
+          <Link href="/review">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex items-center gap-3.5 hover:bg-muted/40 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden">
+              <div className="absolute right-0 top-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-primary/10 blur-xl pointer-events-none" />
+              <div className="p-2.5 bg-primary/10 rounded-xl text-primary flex items-center justify-center">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-foreground">{t('reviewDue')}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                  {reviewCount > 0
+                    ? t('reviewCount').replace('{n}', String(reviewCount))
+                    : t('reviewEmpty')}
+                </div>
+              </div>
+              {reviewCount > 0 && (
+                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  {reviewCount}
+                </span>
+              )}
+              <ChevronRight className={`w-3.5 h-3.5 text-muted-foreground ${lang === 'ar' ? 'rotate-180' : ''}`} />
+            </div>
+          </Link>
+        </motion.div>
+
         {/* Progress Summary: Last 7 Days Activity Chart */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="rounded-3xl border border-border bg-card p-6 flex flex-col gap-4 shadow-sm"
+          transition={{ duration: 0.35, delay: 0.1 }}
+          className="rounded-2xl border border-border bg-card p-4 flex flex-col gap-3 shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">{t('weeklyProgress')}</h2>
+            <div className="flex items-center gap-1.5">
+              <BarChart2 className="w-3.5 h-3.5 text-primary" />
+              <h2 className="text-xs font-semibold text-foreground">{t('weeklyProgress')}</h2>
             </div>
-            <span className="text-xs text-muted-foreground">{t('attemptsPerDay')}</span>
+            <span className="text-[10px] text-muted-foreground">{t('attemptsPerDay')}</span>
           </div>
 
           {/* Bar Chart */}
-          <div className="h-28 flex items-end justify-between gap-2 pt-2">
+          <div className="h-24 flex items-end justify-between gap-2 pt-1">
             {last7Days.map((day) => {
               const heightPercent = `${Math.max((day.count / maxCount) * 100, 8)}%`;
               const isToday = day.fullDate === new Date().toISOString().split('T')[0];
               return (
-                <div key={day.fullDate} className="flex-1 flex flex-col items-center gap-2">
+                <div key={day.fullDate} className="flex-1 flex flex-col items-center gap-1.5">
                   <div className="w-full relative group flex justify-center">
-                    {/* Tooltip */}
-                    <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all rounded-md bg-foreground text-background px-1.5 py-0.5 text-[10px] font-semibold">
+                    <span className="absolute -top-7 scale-0 group-hover:scale-100 transition-all rounded-md bg-foreground text-background px-1.5 py-0.5 text-[9px] font-semibold">
                       {day.count}
                     </span>
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{ height: heightPercent }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
-                      className={`w-2.5 rounded-full ${
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                      className={`w-2 rounded-full ${
                         isToday
-                          ? 'bg-primary shadow-[0_0_8px_rgba(0,113,227,0.5)]'
+                          ? 'bg-primary shadow-[0_0_6px_rgba(0,113,227,0.4)]'
                           : day.count > 0
                           ? 'bg-foreground'
                           : 'bg-muted'
                       }`}
                     />
                   </div>
-                  <span className={`text-[10px] font-medium ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                  <span className={`text-[9px] font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
                     {day.name}
                   </span>
                 </div>
@@ -179,24 +219,56 @@ export default function HomeDashboard() {
         </motion.div>
 
         {/* Motivational Card / Quick Tips */}
-        <div className="rounded-3xl bg-neutral-900 border border-neutral-800 text-neutral-200 p-5 flex flex-col gap-3 relative overflow-hidden">
+        <div className="rounded-2xl bg-neutral-900 border border-neutral-800 text-neutral-200 p-4 flex flex-col gap-2 relative overflow-hidden">
           <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
-            <Award className="w-24 h-24 text-white" />
+            <Award className="w-20 h-20 text-white" />
           </div>
-          <h3 className="text-sm font-semibold text-white">{t('focusTip')}</h3>
-          <p className="text-xs text-neutral-400 leading-relaxed">
+          <h3 className="text-xs font-semibold text-white">{t('focusTip')}</h3>
+          <p className="text-[10px] text-neutral-400 leading-relaxed">
             {t('tipBody')}
           </p>
         </div>
 
-        {/* Spacing to offset the bottom-fixed button */}
-        <div className="flex-1 min-h-[4rem]" />
+        {/* Practice Categories Section */}
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xs font-semibold text-foreground">{t('categoriesTitle')}</h2>
+          <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-none">
+            {[
+              { id: 'daily-conversation', label: t('cat_daily'), image: '/images/categories/daily_conversation.png' },
+              { id: 'business', label: t('cat_business'), image: '/images/categories/business.png' },
+              { id: 'travel', label: t('cat_travel'), image: '/images/categories/travel.png' },
+              { id: 'news', label: t('cat_news'), image: '/images/categories/news.png' },
+              { id: 'movies', label: t('cat_movies'), image: '/images/categories/movies.png' },
+            ].map((cat, i) => (
+              <motion.div
+                key={cat.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: i * 0.05 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Link href="/practice">
+                  <div className="min-w-[90px] flex flex-col items-center gap-1.5 p-2 rounded-xl border border-border bg-card hover:bg-muted transition-all cursor-pointer">
+                    <img
+                      src={cat.image}
+                      alt={cat.label}
+                      className="w-11 h-11 rounded-lg object-cover shadow-sm"
+                    />
+                    <span className="text-[10px] font-semibold text-foreground text-center leading-tight truncate w-full">{cat.label}</span>
+                    <ChevronRight className={`w-3 h-3 text-muted-foreground ${lang === 'ar' ? 'rotate-180' : ''}`} />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <div className="sticky bottom-0 bg-background/90 backdrop-blur-md border-t border-border px-6 py-4 mt-auto">
+      <div className="flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border px-4 py-3 flex flex-col">
         <Link href="/practice">
-          <button className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
+          <button className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
             <Play className="w-4 h-4 fill-current" />
             {t('startPractice')}
             <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
