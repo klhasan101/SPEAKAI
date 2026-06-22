@@ -45,7 +45,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     <LanguageContext.Provider value={{ lang: currentLang, setLang, t }}>
       <div 
         dir={currentLang === 'ar' ? 'rtl' : 'ltr'} 
-        className={currentLang === 'ar' ? 'font-sans text-right' : 'font-sans text-left'}
+        className={`h-full w-full flex flex-col items-center justify-center min-h-0 ${
+          currentLang === 'ar' ? 'font-sans text-right' : 'font-sans text-left'
+        }`}
       >
         {children}
       </div>
