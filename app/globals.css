@@ -3,6 +3,22 @@
 
 
 :root {
+  --background: #f4f4f5; /* Clean light grey background */
+  --foreground: #09090b; /* Zinc-950 deep text */
+  --border: #e4e4e7; /* Zinc-200 border */
+  --card: #ffffff; /* Pure white card surface */
+  --card-foreground: #09090b;
+  --primary: #db2777; /* Pulse Magenta (Guide Voice - Rose 600 for contrast) */
+  --primary-foreground: #ffffff;
+  --ring: rgba(219, 39, 119, 0.25);
+
+  /* Redesign Sonic Colors for Light Theme (high contrast) */
+  --sonic-magenta: #db2777;
+  --sonic-cyan: #0891b2;
+  --sonic-violet: #7c3aed;
+}
+
+.dark {
   --background: #09090b; /* Deep Booth Background */
   --foreground: #fafafa; /* Crisp Light Text */
   --border: #27272a; /* Zinc-800 border */
@@ -10,24 +26,9 @@
   --card-foreground: #fafafa;
   --primary: #ec4899; /* Pulse Magenta (Guide Voice) */
   --primary-foreground: #ffffff;
-  --ring: rgba(236, 72, 153, 0.3);
-
-  /* Redesign Sonic Colors */
-  --sonic-magenta: #ec4899;
-  --sonic-cyan: #06b6d4;
-  --sonic-violet: #8b5cf6;
-}
-
-.dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --border: #27272a;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --primary: #ec4899;
-  --primary-foreground: #ffffff;
   --ring: rgba(236, 72, 153, 0.5);
 
+  /* Redesign Sonic Colors for Dark Theme */
   --sonic-magenta: #ec4899;
   --sonic-cyan: #06b6d4;
   --sonic-violet: #8b5cf6;
