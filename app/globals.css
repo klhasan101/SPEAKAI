@@ -1,25 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss/index.css";
 
+
 :root {
-  --background: #f5f5f7; /* Apple secondary background */
-  --foreground: #1d1d1f; /* Apple primary text */
-  --border: #d2d2d7; /* Apple border */
-  --card: #ffffff; /* Apple primary card */
-  --card-foreground: #1d1d1f;
-  --primary: #0071e3; /* Apple Blue */
+  --background: #09090b; /* Deep Booth Background */
+  --foreground: #fafafa; /* Crisp Light Text */
+  --border: #27272a; /* Zinc-800 border */
+  --card: #18181b; /* Zinc-900 Surface */
+  --card-foreground: #fafafa;
+  --primary: #ec4899; /* Pulse Magenta (Guide Voice) */
   --primary-foreground: #ffffff;
-  --ring: rgba(0, 113, 227, 0.3);
+  --ring: rgba(236, 72, 153, 0.3);
+
+  /* Redesign Sonic Colors */
+  --sonic-magenta: #ec4899;
+  --sonic-cyan: #06b6d4;
+  --sonic-violet: #8b5cf6;
 }
 
 .dark {
-  --background: #000000; /* Apple dark background */
-  --foreground: #f5f5f7; /* Apple dark primary text */
-  --border: #333336; /* Apple dark border */
-  --card: #1c1c1e; /* Apple dark card */
-  --card-foreground: #f5f5f7;
-  --primary: #0071e3;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --border: #27272a;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --primary: #ec4899;
   --primary-foreground: #ffffff;
-  --ring: rgba(0, 113, 227, 0.5);
+  --ring: rgba(236, 72, 153, 0.5);
+
+  --sonic-magenta: #ec4899;
+  --sonic-cyan: #06b6d4;
+  --sonic-violet: #8b5cf6;
 }
 
 @theme inline {
@@ -31,8 +42,14 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-ring: var(--ring);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  
+  --color-sonic-magenta: var(--sonic-magenta);
+  --color-sonic-cyan: var(--sonic-cyan);
+  --color-sonic-violet: var(--sonic-violet);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
 }
 
 /* Custom styles for fluid scrolling and mobile container */
@@ -40,7 +57,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #121212; /* Dark ambient space outside the container */
+  background-color: #030303; /* Ambient space outside container */
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -85,6 +102,74 @@ html, body {
   padding-top: calc(0.625rem + env(safe-area-inset-top, 0px));
 }
 
+/* Wave overlay animations */
+@keyframes wave-ripple-left {
+  0% {
+    transform: translate(-10%, -50%) scale(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate(-5%, -50%) scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-10%, -50%) scale(1);
+    opacity: 0.15;
+  }
+}
+
+@keyframes wave-ripple-right {
+  0% {
+    transform: translate(10%, -50%) scale(1) rotate(180deg);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate(5%, -50%) scale(1.08) rotate(180deg);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(10%, -50%) scale(1) rotate(180deg);
+    opacity: 0.15;
+  }
+}
+
+.animate-wave-ripple-l {
+  animation: wave-ripple-left 6s ease-in-out infinite;
+}
+
+.animate-wave-ripple-r {
+  animation: wave-ripple-right 5s ease-in-out infinite;
+}
+
+/* Word Tokens classes */
+.word-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.625rem;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.word-token-correct {
+  background-color: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+
+.word-token-mispronounced {
+  background-color: rgba(245, 158, 11, 0.08);
+  border: 1px dashed rgba(245, 158, 11, 0.35);
+  color: #f59e0b;
+}
+
+.word-token-missing {
+  background-color: rgba(239, 68, 68, 0.04);
+  border: 1px dotted rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
 
 /* Hide scrollbars on horizontal strips / inner scroll areas
    (Tailwind v4 has no built-in scrollbar-none utility) */

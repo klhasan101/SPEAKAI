@@ -1,17 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "ShadowSpeak AI",
@@ -39,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-[100dvh] overflow-hidden antialiased`} suppressHydrationWarning>
+    <html lang="en" className="h-[100dvh] overflow-hidden antialiased" suppressHydrationWarning>
       <body className="h-[100dvh] w-full bg-neutral-950 flex flex-col items-center justify-center overflow-hidden">
         <Providers>
           {/* Strict Layout Boundary: Mobile Container Wrapper */}

@@ -67,7 +67,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
 
   // Determine back label and header title based on current language
   const backLabel = t('goBack');
-  const headerTitle = title || 'ShadowSpeak AI';
+  const headerTitle = title || 'SPEAKAI';
 
   return (
     <>
@@ -84,7 +84,7 @@ export default function Header({ showBackButton = false, backHref, title }: Head
             </button>
           )}
           <Link href="/" className="flex items-center">
-            <span className="font-semibold text-lg tracking-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+            <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-sonic-magenta to-sonic-cyan bg-clip-text text-transparent">
               {headerTitle}
             </span>
           </Link>

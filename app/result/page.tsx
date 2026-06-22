@@ -601,7 +601,29 @@ function ResultContent() {
                     </button>
 
                     {isExpanded && (
-                      <div className="px-3 pb-3 pt-1 border-t border-border bg-muted/20 flex flex-col gap-2 text-[11px]">
+                      <div className="px-3 pb-3 pt-2 border-t border-border bg-muted/20 flex flex-col gap-2 text-[11px]">
+                        {/* Word Tokens Pronunciation Breakdown */}
+                        {att.words && att.words.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 py-1.5 border-b border-border/60 mb-1 justify-start" dir="ltr">
+                            {att.words.map((w: any, wIdx: number) => {
+                              let statusClass = "word-token-correct";
+                              let indicator = "✓";
+                              if (w.status === "mispronounced") {
+                                statusClass = "word-token-mispronounced";
+                                indicator = "~";
+                              } else if (w.status === "missing") {
+                                statusClass = "word-token-missing line-through";
+                                indicator = "✕";
+                              }
+                              return (
+                                <span key={wIdx} className={`word-token ${statusClass} text-[10px] py-0.5 px-1.5 flex items-center gap-0.5 font-bold`}>
+                                  {w.word}
+                                  <span className="text-[8px] font-bold opacity-80">{indicator}</span>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                         <div className="flex items-start gap-1.5">
                           <span className="text-emerald-500 select-none">🟢</span>
                           <p className="text-foreground font-medium">

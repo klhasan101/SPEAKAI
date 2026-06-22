@@ -94,7 +94,7 @@ export default function HomeDashboard() {
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
         {/* Welcome Section */}
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t('welcome')}</h1>
+          <h1 className="font-display text-2xl font-black tracking-tight text-foreground">{t('welcome')}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">{t('ready')}</p>
         </div>
 
@@ -109,11 +109,11 @@ export default function HomeDashboard() {
           <div className="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-amber-500/10 blur-xl dark:bg-amber-500/5 pointer-events-none" />
           
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl text-amber-500 flex items-center justify-center">
+            <div className="p-2.5 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl text-amber-500 flex items-center justify-center shadow-[0_0_12px_rgba(245,158,11,0.15)]">
               <Flame className="w-6 h-6 fill-amber-500 animate-pulse" />
             </div>
             <div>
-              <div className="text-lg font-bold tracking-tight">
+              <div className="font-display text-lg font-extrabold tracking-tight">
                 {streak.currentStreak} {streak.currentStreak === 1 ? t('day') : t('days')}
               </div>
               <div className="text-[10px] text-muted-foreground">{t('streak')}</div>
@@ -121,20 +121,22 @@ export default function HomeDashboard() {
           </div>
           
           <div className={`text-right ${lang === 'ar' ? 'border-r pr-3' : 'border-l pl-3'} border-border`}>
-            <div className="text-xs font-semibold text-foreground">{streak.longestStreak} {t('days')}</div>
+            <div className="font-display text-xs font-bold text-foreground">{streak.longestStreak} {t('days')}</div>
             <div className="text-[10px] text-muted-foreground">{t('longest')}</div>
           </div>
         </motion.div>
 
         {/* Analytics Summary Row */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center">
-            <div className="text-[10px] text-muted-foreground font-medium">{t('totalShadowings')}</div>
-            <div className="text-lg font-bold text-foreground mt-0.5">{totalAttempts}</div>
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center relative overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-sonic-cyan/5 blur-md rounded-full pointer-events-none" />
+            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t('totalShadowings')}</div>
+            <div className="font-display text-2xl font-black text-foreground mt-0.5">{totalAttempts}</div>
           </div>
-          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center">
-            <div className="text-[10px] text-muted-foreground font-medium">{t('avgScore')}</div>
-            <div className="text-lg font-bold text-foreground mt-0.5">
+          <div className="rounded-xl border border-border bg-card p-3 flex flex-col justify-center relative overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-sonic-magenta/5 blur-md rounded-full pointer-events-none" />
+            <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t('avgScore')}</div>
+            <div className="font-mono text-2xl font-black text-sonic-magenta mt-0.5">
               {averageScore !== null ? `${averageScore}%` : '—'}
             </div>
           </div>
@@ -148,12 +150,12 @@ export default function HomeDashboard() {
         >
           <Link href="/review">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex items-center gap-3.5 hover:bg-muted/40 active:scale-[0.98] transition-all cursor-pointer relative overflow-hidden">
-              <div className="absolute right-0 top-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-primary/10 blur-xl pointer-events-none" />
-              <div className="p-2.5 bg-primary/10 rounded-xl text-primary flex items-center justify-center">
+              <div className="absolute right-0 top-0 -mr-6 -mt-6 w-20 h-20 rounded-full bg-sonic-violet/10 blur-xl pointer-events-none" />
+              <div className="p-2.5 bg-sonic-violet/15 rounded-xl text-sonic-violet flex items-center justify-center shadow-[0_0_10px_rgba(139,92,246,0.15)]">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-foreground">{t('reviewDue')}</div>
+                <div className="font-display text-sm font-extrabold text-foreground">{t('reviewDue')}</div>
                 <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
                   {reviewCount > 0
                     ? t('reviewCount').replace('{n}', String(reviewCount))
@@ -161,7 +163,7 @@ export default function HomeDashboard() {
                 </div>
               </div>
               {reviewCount > 0 && (
-                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-sonic-violet text-white text-[10px] font-bold shadow-[0_0_8px_rgba(139,92,246,0.4)] animate-bounce">
                   {reviewCount}
                 </span>
               )}
@@ -179,8 +181,8 @@ export default function HomeDashboard() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <BarChart2 className="w-3.5 h-3.5 text-primary" />
-              <h2 className="text-xs font-semibold text-foreground">{t('weeklyProgress')}</h2>
+              <BarChart2 className="w-3.5 h-3.5 text-sonic-cyan" />
+              <h2 className="font-display text-xs font-bold text-foreground">{t('weeklyProgress')}</h2>
             </div>
             <span className="text-[10px] text-muted-foreground">{t('attemptsPerDay')}</span>
           </div>
@@ -200,16 +202,16 @@ export default function HomeDashboard() {
                       initial={{ height: 0 }}
                       animate={{ height: heightPercent }}
                       transition={{ duration: 0.5, ease: 'easeOut' }}
-                      className={`w-2 rounded-full ${
+                      className={`w-2.5 rounded-full ${
                         isToday
-                          ? 'bg-primary shadow-[0_0_6px_rgba(0,113,227,0.4)]'
+                          ? 'bg-sonic-magenta shadow-[0_0_8px_rgba(236,72,153,0.5)]'
                           : day.count > 0
-                          ? 'bg-foreground'
+                          ? 'bg-sonic-cyan'
                           : 'bg-muted'
                       }`}
                     />
                   </div>
-                  <span className={`text-[9px] font-semibold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <span className={`text-[9px] font-bold ${isToday ? 'text-sonic-magenta' : 'text-muted-foreground'}`}>
                     {day.name}
                   </span>
                 </div>
@@ -219,11 +221,11 @@ export default function HomeDashboard() {
         </motion.div>
 
         {/* Motivational Card / Quick Tips */}
-        <div className="rounded-2xl bg-neutral-900 border border-neutral-800 text-neutral-200 p-4 flex flex-col gap-2 relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none">
+        <div className="rounded-2xl bg-neutral-900/50 border border-neutral-800 text-neutral-200 p-4 flex flex-col gap-2 relative overflow-hidden">
+          <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
             <Award className="w-20 h-20 text-white" />
           </div>
-          <h3 className="text-xs font-semibold text-white">{t('focusTip')}</h3>
+          <h3 className="font-display text-xs font-bold text-white uppercase tracking-wider">{t('focusTip')}</h3>
           <p className="text-[10px] text-neutral-400 leading-relaxed">
             {t('tipBody')}
           </p>
@@ -231,7 +233,7 @@ export default function HomeDashboard() {
 
         {/* Practice Categories Section */}
         <div className="flex flex-col gap-2">
-          <h2 className="text-xs font-semibold text-foreground">{t('categoriesTitle')}</h2>
+          <h2 className="font-display text-xs font-bold text-foreground">{t('categoriesTitle')}</h2>
           <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-none">
             {[
               { id: 'daily-conversation', label: t('cat_daily'), image: '/images/categories/daily_conversation.png' },
@@ -255,7 +257,7 @@ export default function HomeDashboard() {
                       alt={cat.label}
                       className="w-11 h-11 rounded-lg object-cover shadow-sm"
                     />
-                    <span className="text-[10px] font-semibold text-foreground text-center leading-tight truncate w-full">{cat.label}</span>
+                    <span className="text-[10px] font-bold text-foreground text-center leading-tight truncate w-full">{cat.label}</span>
                     <ChevronRight className={`w-3 h-3 text-muted-foreground ${lang === 'ar' ? 'rotate-180' : ''}`} />
                   </div>
                 </Link>
@@ -268,7 +270,7 @@ export default function HomeDashboard() {
       {/* Sticky Bottom Action Bar */}
       <div className="flex-shrink-0 bg-background/95 backdrop-blur-md border-t border-border px-4 pt-3 pb-safe-lg flex flex-col">
         <Link href="/practice">
-          <button className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
+          <button className="w-full py-3.5 bg-gradient-to-r from-sonic-magenta to-sonic-violet text-white font-display font-bold rounded-2xl flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(236,72,153,0.25)]">
             <Play className="w-4 h-4 fill-current" />
             {t('startPractice')}
             <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />

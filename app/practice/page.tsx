@@ -636,31 +636,46 @@ export default function PracticeEnvironment() {
 
     if (appState === 'FEEDBACK_READY' && evaluation && evaluation.words) {
       return (
-        <div dir="ltr" className="flex flex-wrap justify-center gap-x-2 gap-y-1 max-w-full px-4 select-none [word-break:break-word]">
+        <div dir="ltr" className="flex flex-wrap justify-center gap-2 max-w-full px-4 select-none [word-break:break-word] py-2">
           {evaluation.words.map((w, index) => {
-            let colorClass = 'text-foreground';
             if (w.status === 'correct') {
-              colorClass = 'text-emerald-500 font-bold';
+              return (
+                <span
+                  key={index}
+                  className="word-token word-token-correct text-sm md:text-base font-bold flex items-center gap-1"
+                >
+                  {w.word}
+                  <span className="text-[10px] font-bold">✓</span>
+                </span>
+              );
             } else if (w.status === 'mispronounced') {
-              colorClass = 'text-amber-500 font-bold decoration-wavy underline decoration-2';
-            } else if (w.status === 'missing') {
-              colorClass = 'text-destructive font-bold line-through opacity-50';
+              return (
+                <span
+                  key={index}
+                  className="word-token word-token-mispronounced text-sm md:text-base font-bold flex items-center gap-1"
+                >
+                  {w.word}
+                  <span className="text-[10px] font-bold">~</span>
+                </span>
+              );
+            } else {
+              return (
+                <span
+                  key={index}
+                  className="word-token word-token-missing text-sm md:text-base font-bold flex items-center gap-1 line-through"
+                >
+                  {w.word}
+                  <span className="text-[9px] font-bold">✕</span>
+                </span>
+              );
             }
-            return (
-              <span 
-                key={index} 
-                className={`text-3xl md:text-4xl tracking-tight transition-all duration-300 ${colorClass}`}
-              >
-                {w.word}
-              </span>
-            );
           })}
         </div>
       );
     }
 
     return (
-      <span dir="ltr" className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-snug select-none block [word-break:break-word]">
+      <span dir="ltr" className="font-display text-2xl md:text-3xl font-extrabold tracking-tight text-foreground leading-relaxed select-none block [word-break:break-word] px-3">
         {currentSentence.text}
       </span>
     );
@@ -701,9 +716,10 @@ export default function PracticeEnvironment() {
           {/* Scrollable selectors */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5 min-h-0">
             {/* Session Mode Selector */}
+            {/* Session Mode Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <PlayCircle className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <PlayCircle className="w-4 h-4 text-sonic-magenta" />
                 <span>{t('selectSessionMode')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -712,7 +728,7 @@ export default function PracticeEnvironment() {
                   onClick={() => setSessionMode('sentence')}
                   className={`py-2 px-3 rounded-xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                     sessionMode === 'sentence'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                      ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm font-bold'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -724,7 +740,7 @@ export default function PracticeEnvironment() {
                   onClick={() => setSessionMode('paragraph')}
                   className={`py-2 px-3 rounded-xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                     sessionMode === 'paragraph'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                      ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm font-bold'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -736,8 +752,8 @@ export default function PracticeEnvironment() {
 
             {/* Category Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Layers className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <Layers className="w-4 h-4 text-sonic-magenta" />
                 <span>{t('selectCategory')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -745,9 +761,9 @@ export default function PracticeEnvironment() {
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                    className={`py-2.5 px-3 text-xs font-bold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                       selectedCategory === cat.id
-                        ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                        ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm'
                         : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                   >
@@ -759,8 +775,8 @@ export default function PracticeEnvironment() {
 
             {/* Difficulty Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Sliders className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <Sliders className="w-4 h-4 text-sonic-magenta" />
                 <span>{t('selectDifficulty')}</span>
               </div>
               <div className="flex flex-col gap-2">
@@ -768,9 +784,9 @@ export default function PracticeEnvironment() {
                   <button
                     key={diff.id}
                     onClick={() => setSelectedDifficulty(diff.id)}
-                    className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                    className={`py-2.5 px-3 text-xs font-bold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                       selectedDifficulty === diff.id
-                        ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                        ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm'
                         : 'bg-card border-border hover:bg-muted text-foreground'
                     }`}
                   >
@@ -782,17 +798,17 @@ export default function PracticeEnvironment() {
 
             {/* Source Mode Selector */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Sparkles className="w-4 h-4 text-primary" />
+              <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <Sparkles className="w-4 h-4 text-sonic-magenta" />
                 <span>{t('selectSourceMode')}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setSourceMode('static')}
-                  className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                  className={`py-2.5 px-3 text-xs font-bold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                     sourceMode === 'static'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                      ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -801,9 +817,9 @@ export default function PracticeEnvironment() {
                 <button
                   type="button"
                   onClick={() => setSourceMode('ai')}
-                  className={`py-2.5 px-3 text-xs font-semibold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                  className={`py-2.5 px-3 text-xs font-bold rounded-xl border text-center transition-all duration-200 cursor-pointer ${
                     sourceMode === 'ai'
-                      ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                      ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm'
                       : 'bg-card border-border hover:bg-muted text-foreground'
                   }`}
                 >
@@ -825,7 +841,7 @@ export default function PracticeEnvironment() {
             <button
               onClick={handleStartPractice}
               disabled={isGenerating}
-              className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md disabled:opacity-75 cursor-pointer"
+              className="w-full py-3.5 bg-gradient-to-r from-sonic-magenta to-sonic-violet text-white font-display font-bold rounded-2xl flex items-center justify-center gap-2 hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(236,72,153,0.25)] disabled:opacity-75 cursor-pointer"
             >
               {isGenerating ? (
                 <>
@@ -893,6 +909,22 @@ export default function PracticeEnvironment() {
                     transition={{ duration: 0.3 }}
                     className="w-full text-center flex flex-col items-center justify-center gap-4 bg-card border border-border rounded-3xl p-5 shadow-sm max-h-full overflow-y-auto relative"
                   >
+                    {/* Echo Waveforms Background */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl opacity-20">
+                      {/* Wave 1: Pulse Magenta */}
+                      <svg className={`absolute top-1/2 left-0 w-[200%] h-12 -translate-y-1/2 text-sonic-magenta fill-none animate-wave-ripple-l transition-all duration-500 ${
+                        appState === 'PLAYING_PROMPT' ? 'opacity-85 stroke-[1.5px]' : 'opacity-45'
+                      }`} viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,10 C10,12 15,4 25,10 C35,16 40,8 50,10 C60,12 65,4 75,10 C85,16 90,8 100,10" stroke="currentColor" strokeWidth="0.8" />
+                      </svg>
+                      {/* Wave 2: Electric Cyan */}
+                      <svg className={`absolute top-1/2 right-0 w-[200%] h-12 -translate-y-1/2 text-sonic-cyan fill-none animate-wave-ripple-r transition-all duration-500 ${
+                        appState === 'RECORDING' ? 'opacity-85 stroke-[1.5px] scale-y-[1.8]' : 'opacity-45'
+                      }`} viewBox="0 0 100 20" preserveAspectRatio="none">
+                        <path d="M0,10 C10,4 15,16 25,10 C35,4 40,16 50,10 C60,4 65,16 75,10 C85,4 90,16 100,10" stroke="currentColor" strokeWidth="0.6" strokeDasharray="1 1" />
+                      </svg>
+                    </div>
+
                     {/* Category Context Image */}
                     {currentSentence?.category && categoryImages[currentSentence.category] && (
                       <img
@@ -960,7 +992,7 @@ export default function PracticeEnvironment() {
                 <div className="flex flex-col gap-1.5 p-2.5 rounded-xl border border-border bg-card shadow-sm">
                   <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground">
                     <span>{t('voiceSpeed')}</span>
-                    <span className="text-primary">{voiceSpeed.toFixed(1)}x</span>
+                    <span className="text-sonic-magenta">{voiceSpeed.toFixed(1)}x</span>
                   </div>
                   <div className="flex gap-1" dir="ltr">
                     {[0.6, 0.8, 1.0, 1.2].map((speed) => (
@@ -969,7 +1001,7 @@ export default function PracticeEnvironment() {
                         onClick={() => setVoiceSpeed(speed)}
                         className={`flex-1 py-1 text-[11px] font-bold rounded-lg border transition-all duration-200 cursor-pointer ${
                           voiceSpeed === speed
-                            ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                            ? 'bg-sonic-magenta border-sonic-magenta text-white shadow-sm'
                             : 'bg-card border-border hover:bg-muted text-foreground'
                         }`}
                       >
@@ -985,9 +1017,9 @@ export default function PracticeEnvironment() {
                   <button
                     onClick={playPrompt}
                     disabled={appState === 'PLAYING_PROMPT' || !currentSentence}
-                    className="py-3 rounded-xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-1.5 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer text-sm"
+                    className="py-3 rounded-xl border border-border bg-card text-foreground font-semibold flex items-center justify-center gap-1.5 hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer text-sm font-display"
                   >
-                    <Volume2 className="w-4 h-4 text-primary" />
+                    <Volume2 className="w-4 h-4 text-sonic-magenta" />
                     {t('listen')}
                   </button>
 
@@ -995,7 +1027,7 @@ export default function PracticeEnvironment() {
                   {appState === 'RECORDING' ? (
                     <button
                       onClick={stopRecording}
-                      className="py-3 rounded-xl bg-foreground text-background font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden cursor-pointer text-sm"
+                      className="py-3 rounded-xl bg-foreground text-background font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all relative overflow-hidden cursor-pointer text-sm font-display"
                     >
                       <Square className="w-4 h-4 fill-current text-destructive animate-pulse" />
                       {t('stop')} ({15 - recordingDuration}s)
@@ -1004,7 +1036,7 @@ export default function PracticeEnvironment() {
                     <button
                       onClick={startRecording}
                       disabled={!currentSentence}
-                      className="py-3 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-1.5 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md cursor-pointer text-sm"
+                      className="py-3 rounded-xl bg-sonic-cyan text-zinc-950 font-bold flex items-center justify-center gap-1.5 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_4px_12px_rgba(6,182,212,0.25)] cursor-pointer text-sm font-display animate-none"
                     >
                       <Mic className="w-4 h-4 fill-current" />
                       {t('record')}
