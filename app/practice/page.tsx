@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X } from 'lucide-react';
+import { Volume2, Mic, Square, Loader2, Sparkles, Check, AlertCircle, ChevronRight, X, Layers, Sliders, PlayCircle, HelpCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import { AMERICAN_PHRASES, Sentence } from '@/lib/sentences';
 import { db } from '@/lib/db';
@@ -22,7 +22,12 @@ export default function PracticeEnvironment() {
   const router = useRouter();
   const { lang, t } = useLanguage();
   
-  // State management
+  // V2 Setup Mode States
+  const [isSetupActive, setIsSetupActive] = useState<boolean>(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('daily-conversation');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('beginner');
+
+  // Active session states
   const [sentences, setSentences] = useState<Sentence[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [appState, setAppState] = useState<AppState>('IDLE');
@@ -39,6 +44,9 @@ export default function PracticeEnvironment() {
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
+  // A/B Audio Comparison State (V2 Task 7)
+  const [userAudioBlob, setUserAudioBlob] = useState<Blob | null>(null);
+
   // Timing state for session metrics
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
 
@@ -46,19 +54,10 @@ export default function PracticeEnvironment() {
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Load 10 sentences on mount
+  // Cleanup audio on unmount
   useEffect(() => {
-    // Select 10 random phrases, or if bank is 10, take all 10
-    const shuffled = [...AMERICAN_PHRASES].sort(() => 0.5 - Math.random());
-    setSentences(shuffled.slice(0, 10));
-    setSessionStartTime(Date.now());
-    
-    // Warm up TTS voices in Chrome
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-    }
-
     return () => {
       cleanupAudio();
     };
@@ -80,30 +79,86 @@ export default function PracticeEnvironment() {
         console.error(e);
       }
     }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         track.stop();
-        console.log(`Track ${track.label} stopped`);
       });
       streamRef.current = null;
     }
   };
 
-  // Play Native TTS with controllable speed rate
-  const playPrompt = () => {
+  // Play Neural TTS with local IndexedDB Cache (V2 Task 6)
+  const playPrompt = async () => {
     if (!currentSentence || typeof window === 'undefined') return;
 
+    cleanupAudio();
     setAppState('PLAYING_PROMPT');
-    window.speechSynthesis.cancel();
+
+    try {
+      let audioBlob: Blob;
+      
+      // 1. Check Dexie IndexedDB cache first
+      const cached = await db.ttsCache.get(currentSentence.text);
+      if (cached) {
+        audioBlob = cached.audioBlob;
+      } else {
+        // 2. Fetch from Neural TTS endpoint
+        const res = await fetch(`/api/tts?text=${encodeURIComponent(currentSentence.text)}`);
+        if (!res.ok) {
+          throw new Error('Neural TTS failed');
+        }
+        audioBlob = await res.blob();
+        
+        // Cache the result for future practice sessions
+        await db.ttsCache.put({
+          text: currentSentence.text,
+          audioBlob,
+          timestamp: Date.now()
+        });
+      }
+
+      // Play audio Blob
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      audio.playbackRate = voiceSpeed;
+
+      audio.onended = () => {
+        setAppState('IDLE');
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+      };
+
+      audio.onerror = () => {
+        console.warn('Cached audio playback failed, falling back to Web Speech Synthesis.');
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+        playNativeTTSFallback();
+      };
+
+      await audio.play();
+
+    } catch (err) {
+      console.warn('Neural TTS generation failed. Falling back to native browser speech synthesis:', err);
+      playNativeTTSFallback();
+    }
+  };
+
+  // Web Speech Synthesis Fallback
+  const playNativeTTSFallback = () => {
+    if (typeof window === 'undefined' || !currentSentence) return;
     
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(currentSentence.text);
     utterance.lang = 'en-US';
-    
-    // Explicitly apply selected playback rate/speed controls
     utterance.rate = voiceSpeed;
 
-    // Set voice to American English if available
     const voices = window.speechSynthesis.getVoices();
     const americanVoice = voices.find(
       (voice) => voice.lang.includes('en-US') && voice.name.toLowerCase().includes('google')
@@ -126,10 +181,37 @@ export default function PracticeEnvironment() {
     window.speechSynthesis.speak(utterance);
   };
 
+  // Play target reference audio in Feedback panel (A/B)
+  const playOriginalComparison = async () => {
+    if (!currentSentence) return;
+    try {
+      const cached = await db.ttsCache.get(currentSentence.text);
+      if (cached) {
+        const url = URL.createObjectURL(cached.audioBlob);
+        const audio = new Audio(url);
+        audio.playbackRate = voiceSpeed;
+        audio.play();
+      } else {
+        playNativeTTSFallback();
+      }
+    } catch {
+      playNativeTTSFallback();
+    }
+  };
+
+  // Play user voice attempt in Feedback panel (A/B)
+  const playUserComparison = () => {
+    if (!userAudioBlob) return;
+    const url = URL.createObjectURL(userAudioBlob);
+    const audio = new Audio(url);
+    audio.play();
+  };
+
   // Start Recording
   const startRecording = async () => {
     setErrorMsg(null);
     setAudioChunks([]);
+    setUserAudioBlob(null);
     setRecordingDuration(0);
     cleanupAudio();
 
@@ -143,7 +225,6 @@ export default function PracticeEnvironment() {
       try {
         recorder = new MediaRecorder(stream, options);
       } catch {
-        // Fallback if audio/webm is not supported (e.g. on iOS Safari)
         recorder = new MediaRecorder(stream);
       }
 
@@ -160,16 +241,16 @@ export default function PracticeEnvironment() {
       recorder.onstop = async () => {
         setAppState('ANALYZING');
         const finalBlob = new Blob(localChunks, { type: recorder.mimeType || 'audio/webm' });
+        setUserAudioBlob(finalBlob); // Save voice blob for A/B comparisons
         await submitForEvaluation(finalBlob);
       };
 
-      recorder.start(250); // Get chunks every 250ms
+      recorder.start(250);
       setAppState('RECORDING');
 
-      // Track recording duration
       timerRef.current = setInterval(() => {
         setRecordingDuration((prev) => {
-          if (prev >= 15) { // Cap at 15 seconds
+          if (prev >= 15) {
             stopRecording();
             return prev;
           }
@@ -196,19 +277,17 @@ export default function PracticeEnvironment() {
     }
     
     if (streamRef.current) {
-      // Promptly stop tracks to turn off the record indicator light
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
   };
 
-  // Call API for grading (P0 Fix: Enhanced error checks)
+  // Call API for grading
   const submitForEvaluation = async (audioBlob: Blob) => {
     if (!currentSentence) return;
     setErrorMsg(null);
     
     try {
-      // Check offline status first
       if (typeof window !== 'undefined' && !navigator.onLine) {
         throw new Error('NETWORK_ERROR');
       }
@@ -238,7 +317,6 @@ export default function PracticeEnvironment() {
         throw new Error('INVALID_RESPONSE');
       }
 
-      // Check structure (including V2 words array)
       if (
         typeof result.score !== 'number' ||
         typeof result.feedbackPositive !== 'string' ||
@@ -251,7 +329,7 @@ export default function PracticeEnvironment() {
       const evalResult = result as EvaluationResult;
       setEvaluation(evalResult);
       
-      // Save attempt to IndexedDB Immediately for local-first durability
+      // Save attempt to IndexedDB Immediately
       await db.attempts.add({
         sentenceId: currentSentence.id,
         sentenceText: currentSentence.text,
@@ -284,15 +362,36 @@ export default function PracticeEnvironment() {
     if (currentIndex < sentences.length - 1) {
       setEvaluation(null);
       setErrorMsg(null);
+      setUserAudioBlob(null);
       setCurrentIndex((prev) => prev + 1);
       setAppState('IDLE');
     } else {
-      // Completed last sentence! Go to results
       router.push(`/result?start=${sessionStartTime}`);
     }
   };
 
-  // Render focal prompt with word-level highlight coloring (P3 Task 8)
+  // V2 Initialize Practice block based on filters
+  const handleStartPractice = () => {
+    const filtered = AMERICAN_PHRASES.filter(s => {
+      const matchCat = selectedCategory === 'all' || s.category === selectedCategory;
+      const matchDiff = selectedDifficulty === 'all' || s.difficulty === selectedDifficulty;
+      return matchCat && matchDiff;
+    });
+
+    if (filtered.length === 0) {
+      setErrorMsg(t('noSentencesFound'));
+      return;
+    }
+
+    setErrorMsg(null);
+    const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+    setSentences(shuffled.slice(0, Math.min(filtered.length, 10)));
+    setCurrentIndex(0);
+    setSessionStartTime(Date.now());
+    setIsSetupActive(false);
+    setAppState('IDLE');
+  };
+
   const renderFocalPrompt = () => {
     if (!currentSentence) return null;
 
@@ -328,108 +427,192 @@ export default function PracticeEnvironment() {
     );
   };
 
+  // Categories list
+  const categories = [
+    { id: 'daily-conversation', label: t('cat_daily') },
+    { id: 'business', label: t('cat_business') },
+    { id: 'travel', label: t('cat_travel') },
+    { id: 'news', label: t('cat_news') },
+    { id: 'movies', label: t('cat_movies') }
+  ];
+
+  // Difficulties list
+  const difficulties = [
+    { id: 'beginner', label: t('diff_beginner') },
+    { id: 'intermediate', label: t('diff_intermediate') },
+    { id: 'advanced', label: t('diff_advanced') }
+  ];
+
   return (
     <div className="flex-1 flex flex-col bg-background relative overflow-hidden">
-      <Header showBackButton backHref="/" title={t('shadowingPractice')} />
+      <Header showBackButton backHref="/" title={isSetupActive ? t('practiceSetup') : t('shadowingPractice')} />
 
-      {/* Main Content Area */}
-      <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10">
-        
-        {/* Progress Tracker */}
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-            {t('progress')}
-          </span>
-          <span className="text-sm font-bold text-primary">
-            {t('sentenceOf', { x: currentIndex + 1, y: sentences.length })}
-          </span>
-        </div>
+      {isSetupActive ? (
+        /* V2 Setup UI */
+        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10">
+          <div className="space-y-6">
+            
+            {/* Category Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <Layers className="w-4 h-4 text-primary" />
+                <span>{t('selectCategory')}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`py-3 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                      selectedCategory === cat.id
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-card border-border hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Focal Prompt Card */}
-        <div className="flex-1 flex flex-col items-center justify-center py-8">
-          <AnimatePresence mode="wait">
-            {currentSentence ? (
-              <motion.div
-                key={currentSentence.id}
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-                className="w-full text-center flex flex-col items-center gap-6"
-              >
-                <div className="relative group p-2 w-full">
-                  {renderFocalPrompt()}
-                </div>
-                
-                {appState === 'PLAYING_PROMPT' && (
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">
-                    {t('playingPrompt')}
-                  </span>
-                )}
-              </motion.div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <span className="text-sm text-muted-foreground">{t('preparing')}</span>
+            {/* Difficulty Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <Sliders className="w-4 h-4 text-primary" />
+                <span>{t('selectDifficulty')}</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                {difficulties.map((diff) => (
+                  <button
+                    key={diff.id}
+                    onClick={() => setSelectedDifficulty(diff.id)}
+                    className={`py-3.5 px-4 text-sm font-semibold rounded-2xl border text-center transition-all duration-200 ${
+                      selectedDifficulty === diff.id
+                        ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                        : 'bg-card border-border hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    {diff.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMsg}</span>
               </div>
             )}
-          </AnimatePresence>
-        </div>
-
-        {/* Error notification banner */}
-        {errorMsg && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-start gap-3"
-          >
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-semibold">{t('errorTitle')}</p>
-              <p className="text-xs opacity-90 mt-0.5">{errorMsg}</p>
-            </div>
-            <button onClick={() => setErrorMsg(null)} className="p-0.5 hover:bg-destructive/10 rounded-full">
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        )}
-
-        {/* Apple-style loading shimmer during analysis */}
-        {appState === 'ANALYZING' && (
-          <div className="w-full bg-card border border-border rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-pulse">
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              <span className="text-sm font-semibold text-foreground">{t('analyzingAcoustics')}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="h-4 bg-muted rounded-full w-full animate-shimmer" />
-              <div className="h-4 bg-muted rounded-full w-5/6 animate-shimmer" />
-            </div>
           </div>
-        )}
 
-        {/* Control Hub (Sticky Bottom Area) */}
-        <div className="w-full flex flex-col gap-4 pt-4 border-t border-border">
-          {appState !== 'ANALYZING' && appState !== 'FEEDBACK_READY' && (
-            <>
-              {/* Voice Speed Controls */}
-              <div className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-card shadow-sm">
-                <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground">
-                  <span>{t('voiceSpeed')}</span>
-                  <span className="font-bold text-primary">{voiceSpeed.toFixed(1)}x</span>
+          <button
+            onClick={handleStartPractice}
+            className="w-full py-4 bg-primary text-primary-foreground font-semibold rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
+          >
+            {t('startPracticeBtn')}
+            <ChevronRight className={`w-4 h-4 ${lang === 'ar' ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+      ) : (
+        /* Active Practice UI */
+        <div className="flex-1 px-6 py-6 flex flex-col justify-between gap-6 z-10">
+          
+          {/* Progress Tracker */}
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              {t('progress')}
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {t('sentenceOf', { x: currentIndex + 1, y: sentences.length })}
+            </span>
+          </div>
+
+          {/* Focal Prompt Card */}
+          <div className="flex-1 flex flex-col items-center justify-center py-8">
+            <AnimatePresence mode="wait">
+              {currentSentence ? (
+                <motion.div
+                  key={currentSentence.id}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full text-center flex flex-col items-center gap-6"
+                >
+                  <div className="relative group p-2 w-full">
+                    {renderFocalPrompt()}
+                  </div>
+                  
+                  {appState === 'PLAYING_PROMPT' && (
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-3 py-1 rounded-full animate-pulse">
+                      {t('playingPrompt')}
+                    </span>
+                  )}
+                </motion.div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  <span className="text-sm text-muted-foreground">{t('preparing')}</span>
                 </div>
-                <div className="flex gap-1" dir="ltr">
-                  {[0.6, 0.8, 1.0, 1.2].map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => setVoiceSpeed(speed)}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition-all duration-200 ${
-                        voiceSpeed === speed
-                          ? 'bg-primary border-primary text-primary-foreground shadow-sm'
-                          : 'bg-card border-border hover:bg-muted text-foreground'
-                      }`}
-                    >
-                      {speed}x
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Error notification banner */}
+          {errorMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-start gap-3"
+            >
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold">{t('errorTitle')}</p>
+                <p className="text-xs opacity-90 mt-0.5">{errorMsg}</p>
+              </div>
+              <button onClick={() => setErrorMsg(null)} className="p-0.5 hover:bg-destructive/10 rounded-full">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+
+          {/* Apple-style loading shimmer during analysis */}
+          {appState === 'ANALYZING' && (
+            <div className="w-full bg-card border border-border rounded-3xl p-6 flex flex-col gap-4 shadow-sm animate-pulse">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <span className="text-sm font-semibold text-foreground">{t('analyzingAcoustics')}</span>
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 bg-muted rounded-full w-full animate-shimmer" />
+                <div className="h-4 bg-muted rounded-full w-5/6 animate-shimmer" />
+              </div>
+            </div>
+          )}
+
+          {/* Control Hub (Sticky Bottom Area) */}
+          <div className="w-full flex flex-col gap-4 pt-4 border-t border-border">
+            {appState !== 'ANALYZING' && appState !== 'FEEDBACK_READY' && (
+              <>
+                {/* Voice Speed Controls */}
+                <div className="flex flex-col gap-2 p-3.5 rounded-2xl border border-border bg-card shadow-sm">
+                  <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground">
+                    <span>{t('voiceSpeed')}</span>
+                    <span className="font-bold text-primary">{voiceSpeed.toFixed(1)}x</span>
+                  </div>
+                  <div className="flex gap-1" dir="ltr">
+                    {[0.6, 0.8, 1.0, 1.2].map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => setVoiceSpeed(speed)}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-xl border transition-all duration-200 ${
+                          voiceSpeed === speed
+                            ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                            : 'bg-card border-border hover:bg-muted text-foreground'
+                        }`}
+                      >
+                        {speed}x
                     </button>
                   ))}
                 </div>
@@ -471,10 +654,11 @@ export default function PracticeEnvironment() {
           )}
         </div>
       </div>
+    )}
 
       {/* Sliding Feedback Modal from bottom */}
       <AnimatePresence>
-        {appState === 'FEEDBACK_READY' && evaluation && (
+        {!isSetupActive && appState === 'FEEDBACK_READY' && evaluation && (
           <>
             {/* Modal Backdrop */}
             <motion.div
@@ -499,7 +683,6 @@ export default function PracticeEnvironment() {
               <div className="flex flex-col items-center text-center gap-4">
                 {/* Score Indicator Badge */}
                 <div className="relative flex items-center justify-center w-24 h-24">
-                  {/* SVG Circle Track */}
                   <svg className="w-full h-full transform -rotate-95">
                     <circle
                       cx="48"
@@ -532,6 +715,25 @@ export default function PracticeEnvironment() {
                   <h3 className="text-lg font-bold text-foreground">{t('acousticScore')}</h3>
                   <p className="text-xs text-muted-foreground">{t('accentAlignDetail')}</p>
                 </div>
+              </div>
+
+              {/* V2 Task 7: A/B Audio Comparison Controls */}
+              <div className="grid grid-cols-2 gap-3 p-1 border-y border-border py-3">
+                <button
+                  onClick={playOriginalComparison}
+                  className="py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold flex items-center justify-center gap-2 text-foreground active:scale-[0.97] transition-all"
+                >
+                  <Volume2 className="w-4 h-4 text-primary" />
+                  {lang === 'ar' ? '🔊 الأصلي' : '🔊 Original'}
+                </button>
+                <button
+                  onClick={playUserComparison}
+                  disabled={!userAudioBlob}
+                  className="py-2.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-bold flex items-center justify-center gap-2 text-foreground active:scale-[0.97] transition-all disabled:opacity-40"
+                >
+                  <Mic className="w-4 h-4 text-primary" />
+                  {lang === 'ar' ? '🎤 صوتك' : '🎤 Your Voice'}
+                </button>
               </div>
 
               {/* Feedback Points */}

@@ -56,7 +56,21 @@ export const translations = {
     networkError: "Connection error. Please check your internet connection.",
     apiError: "API evaluation failed. Please verify API key configuration.",
     invalidResponse: "Received an invalid grading response. Please try again.",
-    unknownError: "An unknown error occurred. Please try again."
+    unknownError: "An unknown error occurred. Please try again.",
+    // V2 Setup Translations
+    practiceSetup: "Practice Setup",
+    selectCategory: "Select Practice Category",
+    selectDifficulty: "Select Practice Level",
+    startPracticeBtn: "Start Session",
+    noSentencesFound: "No sentences found matching your criteria. Try another filter.",
+    cat_daily: "Daily Conversation",
+    cat_business: "Business",
+    cat_travel: "Travel",
+    cat_news: "News",
+    cat_movies: "Movies",
+    diff_beginner: "Beginner",
+    diff_intermediate: "Intermediate",
+    diff_advanced: "Advanced"
   },
   ar: {
     welcome: "مرحباً بك مجدداً",
@@ -113,6 +127,20 @@ export const translations = {
     networkError: "خطأ في الاتصال. يرجى التحقق من اتصالك بالإنترنت.",
     apiError: "فشل تقييم واجهة برمجة التطبيقات. يرجى التحقق من إعداد مفتاح API الخاص بك.",
     invalidResponse: "تم استلام استجابة غير صالحة من نظام التقييم. يرجى إعادة المحاولة.",
-    unknownError: "حدث خطأ غير معروف. يرجى المحاولة مرة أخرى."
+    unknownError: "حدث خطأ غير معروف. يرجى المحاولة مرة أخرى.",
+    // V2 Setup Translations
+    practiceSetup: "إعداد التدريب",
+    selectCategory: "اختر تصنيف التدريب",
+    selectDifficulty: "اختر مستوى التدريب",
+    startPracticeBtn: "بدء الجلسة",
+    noSentencesFound: "لم يتم العثور على جمل تطابق اختياراتك. جرب فلترة أخرى.",
+    cat_daily: "محادثات يومية",
+    cat_business: "الأعمال",
+    cat_travel: "السفر",
+    cat_news: "الأخبار",
+    cat_movies: "الأفلام",
+    diff_beginner: "مبتدئ",
+    diff_intermediate: "متوسط",
+    diff_advanced: "متقدم"
   }
 };

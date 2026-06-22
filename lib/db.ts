@@ -11,13 +11,21 @@ export interface Attempt {
   words?: { word: string; status: 'correct' | 'mispronounced' | 'missing' }[];
 }
 
+export interface TTSCacheEntry {
+  text: string;
+  audioBlob: Blob;
+  timestamp: number;
+}
+
 class ShadowSpeakDB extends Dexie {
   attempts!: Table<Attempt>;
+  ttsCache!: Table<TTSCacheEntry>;
 
   constructor() {
     super('ShadowSpeakDB');
-    this.version(1).stores({
-      attempts: '++id, sentenceId, score, timestamp'
+    this.version(2).stores({
+      attempts: '++id, sentenceId, score, timestamp',
+      ttsCache: 'text'
     });
   }
 }
